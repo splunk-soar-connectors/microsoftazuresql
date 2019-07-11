@@ -9,13 +9,14 @@
     "product_name": "Azure SQL",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) Splunk, 2019",
+    "license": "Copyright (c) 2019 Splunk Inc.",
     "app_version": "1.0.0",
     "utctime_updated": "2019-07-09T17:20:42.341345Z",
     "package_name": "phantom_microsoftazuresql",
     "main_module": "microsoftazuresql_connector.pyc",
     "min_phantom_version": "4.1.32",
     "app_wizard_version": "1.0.0",
+    "rest_handler": "microsoftazuresql_connector._handle_rest_request",
     "configuration": {
         "subscription_id": {
             "description": "Subscription ID",
@@ -29,16 +30,12 @@
             "description": "Tenant ID",
             "data_type": "string",
             "required": true,
-            "value_list": [],
-            "default": "",
             "order": 1
         },
         "client_id": {
             "description": "Application (client) ID assigned to your VM Management app",
             "data_type": "string",
             "required": true,
-            "value_list": [],
-            "default": "",
             "order": 2
         },
         "client_secret": {
@@ -50,7 +47,6 @@
         "admin_access": {
             "description": "Admin Access Required",
             "data_type": "boolean",
-            "required": true,
             "default": true,
             "order": 4
         }
@@ -68,95 +64,263 @@
             "versions": "EQ(*)"
         },
         {
-            "action": "reverse email",
-            "identifier": "reverse_email",
-            "description": "Find domains with an email in their Whois record",
-            "verbose": "",
-            "type": "investigate",
+            "action": "list tables",
+            "identifier": "list_tables",
+            "description": "Gets a list of databases by server",
+            "type": "information",
             "read_only": true,
             "parameters": {
-                "email": {
-                    "description": "email query",
+                "resource_group_name": {
+                    "description": "The name of the resource group",
                     "data_type": "string",
                     "required": true,
                     "primary": true,
                     "contains": [
-                        "email"
+                        "azure resource group"
                     ],
-                    "value_list": [],
-                    "default": "",
                     "order": 0
                 },
-                "include_history": {
-                    "description": "Include historical whois matches",
-                    "data_type": "boolean",
-                    "required": false,
+                "server_name": {
+                    "description": "The name of the server. Should not include '.database.windows.net'",
+                    "data_type": "string",
+                    "required": true,
                     "primary": false,
-                    "contains": [],
-                    "default": false,
                     "order": 1
-                },
-                "ph": {
-                    "description": "Placeholder",
-                    "data_type": "ph",
-                    "required": false,
-                    "primary": false,
-                    "contains": [],
-                    "value_list": [],
-                    "default": "",
-                    "order": 2
-                },
-                "count_only": {
-                    "description": "Only return count of matched records",
-                    "data_type": "boolean",
-                    "required": false,
-                    "primary": false,
-                    "contains": [],
-                    "default": false,
-                    "order": 3
                 }
             },
             "output": [
                 {
-                    "data_path": "action_result.parameter.email",
+                    "data_path": "action_result.status",
                     "data_type": "string",
-                    "contains": [
-                        "email"
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.sku.tier",
+                    "data_type": "string",
+                    "example_values": [
+                        "System"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.sku.capacity",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.sku.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "System"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.kind",
+                    "data_type": "string",
+                    "example_values": [
+                        "v12.0,system"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "master"
                     ],
-                    "column_name": "email",
+                    "column_name": "name",
                     "column_order": 0
                 },
                 {
-                    "data_path": "action_result.parameter.include_history",
-                    "data_type": "boolean",
-                    "contains": [],
-                    "column_name": "include_history",
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "example_values": [
+                        "/subscriptions/a81fccf8-0405-43ae-990c-ab1389e40c6d/resourceGroups/matt-test-resource-group/providers/Microsoft.Sql/servers/matt-test-azure-db-server/databases/master"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.managedBy",
+                    "data_type": "string",
+                    "example_values": [
+                        "/subscriptions/a81fccf8-0405-43ae-990c-ab1389e40c6d/resourceGroups/matt-test-resource-group/providers/Microsoft.Sql/servers/matt-test-azure-db-server"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.location",
+                    "data_type": "string",
+                    "example_values": [
+                        "westus"
+                    ],
+                    "column_name": "location",
+                    "column_order": 3
+                },
+                {
+                    "data_path": "action_result.data.*.type",
+                    "data_type": "string",
+                    "example_values": [
+                        "Microsoft.Sql/servers/databases"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "Online"
+                    ],
+                    "column_name": "status",
                     "column_order": 1
                 },
                 {
-                    "data_path": "action_result.parameter.count_only",
-                    "data_type": "boolean",
-                    "contains": [],
-                    "column_name": "count_only",
-                    "column_order": 2
+                    "data_path": "action_result.data.*.properties.databaseId",
+                    "data_type": "string",
+                    "example_values": [
+                        "3d7aef88-31b7-4f80-adec-e8633041b8b9"
+                    ]
                 },
                 {
-                    "data_path": "action_result.status",
+                    "data_path": "action_result.data.*.properties.currentSku.tier",
                     "data_type": "string",
-                    "column_name": "status",
-                    "column_order": 4
+                    "example_values": [
+                        "System"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.currentSku.capacity",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.currentSku.name",
+                    "data_type": "string",
+                    "example_values": [
+                        "System"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.currentServiceObjectiveName",
+                    "data_type": "string",
+                    "example_values": [
+                        "System0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.requestedServiceObjectiveName",
+                    "data_type": "string",
+                    "example_values": [
+                        "System0"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.zoneRedundant",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.maxSizeBytes",
+                    "data_type": "numeric",
+                    "example_values": [
+                        32212254720
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.defaultSecondaryLocation",
+                    "data_type": "string",
+                    "example_values": [
+                        "eastus"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.readReplicaCount",
+                    "data_type": "numeric",
+                    "example_values": [
+                        0
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.readScale",
+                    "data_type": "string",
+                    "example_values": [
+                        "Disabled"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.collation",
+                    "data_type": "string",
+                    "example_values": [
+                        "SQL_Latin1_General_CP1_CI_AS"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.creationDate",
+                    "data_type": "string",
+                    "example_values": [
+                        "2019-05-09T20:11:18.627Z"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.catalogCollation",
+                    "data_type": "string",
+                    "example_values": [
+                        "SQL_Latin1_General_CP1_CI_AS"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.properties.earliestRestoreDate",
+                    "data_type": "string",
+                    "example_values": [
+                        "2019-06-06T00:00:00Z"
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
-                    "data_type": "string"
+                    "data_type": "string",
+                    "example_values": [
+                        "Num dbs: 2"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.resource_group_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "matt-test-resource-group"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.server_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "matt-test-azure-db-server"
+                    ],
+                    "column_name": "server",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.summary.num_dbs",
+                    "data_type": "numeric",
+                    "example_values": [
+                        2
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 },
                 {
                     "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric"
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "render": {
