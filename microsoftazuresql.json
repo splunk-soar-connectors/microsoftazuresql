@@ -16,6 +16,14 @@
     "main_module": "microsoftazuresql_connector.pyc",
     "min_phantom_version": "4.1.32",
     "app_wizard_version": "1.0.0",
+    "pip_dependencies": {
+        "wheel": [
+            {
+                "module": "pyodbc",
+                "input_file": "wheels/pyodbc-4.0.26-cp27-cp27mu-linux_x86_64.whl"
+            }
+        ]
+    },
     "configuration": {
         "username": {
             "description": "Username",
@@ -341,6 +349,9 @@
                     "data_type": "string",
                     "example_values": [
                         "SELECT TOP 20 pc.Name as CategoryName, p.name as ProductName FROM [SalesLT].[ProductCategory] pc JOIN [SalesLT].[Product] p ON pc.productcategoryid = p.productcategoryid"
+                    ],
+                    "contains": [
+                        "sql query"
                     ]
                 },
                 {
