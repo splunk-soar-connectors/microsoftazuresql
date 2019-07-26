@@ -14,6 +14,7 @@ from phantom.action_result import ActionResult
 from microsoftazuresql_consts import *
 import json
 import pyodbc
+import binascii
 import requests
 
 
@@ -117,6 +118,72 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
+    def _get_query_results(self, action_result):
+
+        try:
+
+            results = []
+            columns = self._cursor.description
+
+            if columns:
+                for value in self._cursor.fetchall():
+
+                    column_dict = {}
+
+                    for index, column in enumerate(value):
+
+                        if columns[index][1] == 2 and column is not None:
+                            column = '0x{0}'.format(binascii.hexlify(column).decode().upper())
+
+                        column_dict[columns[index][0]] = column
+
+                    results.append(column_dict)
+            else:
+                results = []
+        except Exception as e:
+            return RetVal(action_result.set_status(
+                phantom.APP_ERROR,
+                "Unable to retrieve results from query",
+                e
+            ))
+        return RetVal(phantom.APP_SUCCESS, results)
+
+    def _check_for_valid_schema(self, action_result, schema):
+        query = "SELECT * FROM sys.schemas WHERE name = " + "'" + schema + "';"
+        try:
+            self._cursor.execute(query)
+        except Exception as e:
+            return action_result.set_status(
+                phantom.APP_ERROR, "Error searching for schema", e
+            )
+
+        results = self._cursor.fetchall()
+        if len(results) == 0:
+            return action_result.set_status(phantom.APP_ERROR, "The specified schema could not be found")
+
+        return phantom.APP_SUCCESS
+
+    def _check_for_valid_table(self, action_result, table, check_single=False):
+        # check_single will ensure there is only one table with this name
+        # If more are found, it will throw an error saying a schema is required
+        query = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = " + "'" + table + "';"
+        try:
+            self._cursor.execute(query)
+        except Exception as e:
+            return action_result.set_status(
+                phantom.APP_ERROR, "Error searching for table", e
+            )
+
+        results = self._cursor.fetchall()
+        if len(results) == 0:
+            return action_result.set_status(phantom.APP_ERROR, "The specified table could not be found")
+        elif check_single and len(results) > 1:  # There is more than 1 table
+            return action_result.set_status(
+                phantom.APP_ERROR, "More than 1 table has that name, specify a table schema"
+            )
+
+        return phantom.APP_SUCCESS
+
     def _handle_test_connectivity(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
         query = "SELECT @@version;"
@@ -134,38 +201,103 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def _handle_list_tables(self, param):
-        """ This function is used to handle the list tables action.
-
-        :param param: Dictionary of input parameters
-        :return: status(phantom.APP_SUCCESS/phantom.APP_ERROR)
-        """
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-
         action_result = self.add_action_result(ActionResult(dict(param)))
+        table_schema = param.get('table_schema')
 
-        resource_group_name = param['resource_group_name']
-        server_name = param['server_name']
+        query = "SELECT TABLE_NAME, TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"
 
-        endpoint = DB_LIST_TABLES_ALL_ENDPOINT.format(resourceGroupName=resource_group_name, serverName=server_name)
+        if table_schema:
+            if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
+                return phantom.APP_ERROR
+            query += " AND TABLE_SCHEMA = " + "'" + table_schema + "'"
 
-        # make rest call
-        ret_val, response = self._make_rest_call_helper(endpoint, action_result, params=None, headers=None)
+        try:
+            self._cursor.execute(query)
+        except Exception as e:
+            return action_result.set_status(
+                phantom.APP_ERROR, "Error listing tables", e
+            )
 
-        if (phantom.is_fail(ret_val)):
-            return action_result.get_status()
+        ret_val, results = self._get_query_results(action_result)
+        if phantom.is_fail(ret_val):
+            return ret_val
 
-        # Add the response into the data section
-        values = response.get('value', [])
-        for db in values:
-            action_result.add_data(db)
+        for row in results:
+            action_result.add_data(row)
 
-        # Add a dictionary that is made up of the most important values from data into the summary
         summary = action_result.update_summary({})
-        summary['num_dbs'] = len(values)
+        summary['num_tables'] = len(results)
 
-        # Return success, no need to set the message, only the status
-        # BaseConnector will create a textual message based off of the summary dictionary
         return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _handle_list_columns(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+        table_name = param.get('table_name')
+        table_schema = param.get('table_schema')
+
+        if phantom.is_fail(self._check_for_valid_table(action_result, table_name, not bool(table_schema))):
+            return phantom.APP_ERROR
+
+        query = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = " + "'" + table_name + "'"
+
+        if table_schema:
+            if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
+                return phantom.APP_ERROR
+            query += " AND TABLE_SCHEMA = " + "'" + table_schema + "'"
+
+        try:
+            self._cursor.execute(query)
+        except Exception as e:
+            return action_result.set_status(
+                phantom.APP_ERROR, "Error listing columns", e
+            )
+
+        ret_val, results = self._get_query_results(action_result)
+        if phantom.is_fail(ret_val):
+            return ret_val
+
+        for row in results:
+            action_result.add_data(row)
+
+        if len(results) == 0:
+            return action_result.set_status(phantom.APP_ERROR, "Table does not exist in specified schema")
+        summary = action_result.update_summary({})
+        summary['num_columns'] = len(results)
+
+        return action_result.set_status(phantom.APP_SUCCESS)
+
+    def _handle_run_query(self, param):
+        action_result = self.add_action_result(ActionResult(dict(param)))
+        query = param['query']
+
+        try:
+            self._cursor.execute(query)
+        except Exception as e:
+            return action_result.set_status(
+                phantom.APP_ERROR, "Error running query", e
+            )
+
+        ret_val, results = self._get_query_results(action_result)
+        if phantom.is_fail(ret_val):
+            return ret_val
+
+        if not param.get('no_commit', False):
+            try:
+                self._connection.commit()
+            except Exception as e:
+                return action_result.set_status(
+                    phantom.APP_ERROR, "unable to commit changes", e
+                )
+
+        for row in results:
+            action_result.add_data(
+                {key: str(value) for key, value in row.items()}
+            )
+
+        summary = action_result.update_summary({})
+        summary['num_rows'] = len(results)
+
+        return action_result.set_status(phantom.APP_SUCCESS, "Successfully ran query")
 
     def handle_action(self, param):
 
@@ -181,6 +313,12 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         if action_id == 'list_tables':
             ret_val = self._handle_list_tables(param)
+
+        if action_id == 'list_columns':
+            ret_val = self._handle_list_columns(param)
+
+        if action_id == 'run_query':
+            ret_val = self._handle_run_query(param)
 
         return ret_val
 
