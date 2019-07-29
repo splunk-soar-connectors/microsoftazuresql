@@ -64,7 +64,7 @@
         },
         "connection_string": {
             "description": "Custom Connection String",
-            "data_type": "string",
+            "data_type": "password",
             "required": false,
             "order": 6
         }

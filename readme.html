@@ -1,2 +1,36 @@
-Talk about asset config how u can do custom connection string instead of filling out everything else.along with how to format
-that connection_string
+<!-- File: readme.html
+  Copyright (c) 2019 Splunk Inc.
+
+  SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
+  without a valid written license from Splunk Inc. is PROHIBITED.
+-->
+
+<br></br><b>Establishing a Connection to your Azure SQL Server</b><br></br>
+
+Prior to configuring your SQL asset, you must install the <b>pyodbc module</b> and an <b>ODBC driver</b> on your Phantom instance.
+This can be done by running the following commands on your instance under a user with root privileges:
+<ul>
+  <li>pyODBC Module</li>
+  <ul>
+    <li>sudo yum install unixODBC-devel</li>
+    <li>git submodule init</li>
+    <li>git submodule update</li>
+  </ul>
+  <li>ODBC Driver</li>
+  <ul>
+    <li>If using Centos7/RedHat7, download from <a href="https://packages.microsoft.com/rhel/7/prod/">here</a></li>
+    <li>If using Centos6/RedHat6, download from <a href="https://packages.microsoft.com/rhel/6/prod/">here</a></li>
+    <li>rpm -ivh <rpm file name goes here></li>
+    <li>Verify you have installed the driver by running 'ls -l /opt/microsoft/msodbcsql<driver version number here>'</li>
+  </ul>
+</ul>
+
+After installing the Microsoft Azure SQL app, pyodbc module, and ODBC driver, you have two options to configure your asset:
+<ul>
+  <li>Fill out every asset field except for the Custom Connection String box</li>
+  <li>Use a Custom Connection String. Example format:
+    <ul>
+      <li>Driver={ODBC Driver 17 for SQL Server};Server=tcp:test-server.database.windows.net;Database=sampledb;Uid=username;Pwd=password;Encrypt=no;TrustServerCertificate=yes;Trusted_Connection=yes;Connection Timeout=30;</li>
+    </ul>
+  </li>
+</ul>
