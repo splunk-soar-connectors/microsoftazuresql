@@ -14,7 +14,7 @@
     "utctime_updated": "2019-07-09T17:20:42.341345Z",
     "package_name": "phantom_microsoftazuresql",
     "main_module": "microsoftazuresql_connector.pyc",
-    "min_phantom_version": "4.1.32",
+    "min_phantom_version": "4.2.7532",
     "app_wizard_version": "1.0.0",
     "pip_dependencies": {
         "wheel": [
