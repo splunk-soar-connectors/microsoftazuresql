@@ -5,21 +5,23 @@
   without a valid written license from Splunk Inc. is PROHIBITED.
 -->
 
-<br></br><b>Establishing a Connection to your Azure SQL Server</b><br></br>
+<h2>Establishing a Connection to your Azure SQL Server</h2>
 
-Prior to configuring your SQL asset, you must install the <b>pyodbc module</b> and an <b>ODBC driver</b> on your Phantom instance.
+Prior to configuring your Azure SQL asset, you must install the <b>ODBC driver</b> on your Phantom instance.
 This can be done by running the following commands on your instance under a user with root privileges:
 <ul>
-  <li>ODBC Driver</li>
+  <li>ODBC Driver 17 Installation</li>
   <ul>
-    <li>If using Centos7/RedHat7, download from <a href="https://packages.microsoft.com/rhel/7/prod/">here</a></li>
-    <li>If using Centos6/RedHat6, download from <a href="https://packages.microsoft.com/rhel/6/prod/">here</a></li>
-    <li>rpm -ivh <rpm file name goes here></li>
-    <li>Verify you have installed the driver by running 'ls -l /opt/microsoft/msodbcsql*>'</li>
+    <li>sudo su</li>
+    <li>If using Centos7/RedHat7: curl https://packages.microsoft.com/config/rhel/7/prod.repo &gt; /etc/yum.repos.d/mssql-release.repo</li>
+    <li>If using Centos6/RedHat6: curl https://packages.microsoft.com/config/rhel/6/prod.repo &gt; /etc/yum.repos.d/mssql-release.repo</li>
+    <li>If using a different OS, check <a href="https://docs.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-2017">here</a></li>
+    <li>exit</li>
+    <li>sudo yum install msodbcsql17</li>
   </ul>
 </ul>
 
-After installing the Microsoft Azure SQL app, pyodbc module, and ODBC driver, you have two options to configure your asset:
+After installing the Microsoft Azure SQL app and ODBC driver, you have two options to configure your asset:
 <ul>
   <li>Fill out every asset field except for the Custom Connection String box</li>
   <li>Use a Custom Connection String. Example format:
