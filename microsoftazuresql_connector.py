@@ -204,7 +204,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
         table_schema = param.get('table_schema')
 
-        query = "SELECT TABLE_NAME, TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"
+        query = "SELECT TABLE_NAME, TABLE_SCHEMA, TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"
 
         if table_schema:
             if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
