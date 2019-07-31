@@ -13,7 +13,6 @@ from phantom.action_result import ActionResult
 
 from microsoftazuresql_consts import *
 import json
-import pyodbc
 import binascii
 import requests
 
@@ -349,6 +348,12 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                             Connection Timeout=30;""".format(driver=driver, host=host, database=database, uid=username, pwd=password, trust_server=trust_server)
 
         self.debug_print(connection_string)
+        # Check to see if user has installed the pyodbc driver
+        try:
+            import pyodbc
+        except ImportError:
+            return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing pyodbc driver. Please install with the instructions in the app's documentation")
+
         try:
             self._connection = pyodbc.connect(
                 connection_string
