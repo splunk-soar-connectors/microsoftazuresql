@@ -2,19 +2,18 @@
 # Copyright (c) 2019 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
-# without a valid written license from Splunk Inc. is PROHIBITED.# -----------------------------------------
-# Phantom sample App Connector python file
-# -----------------------------------------
+# without a valid written license from Splunk Inc. is PROHIBITED.
 
 # Phantom App imports
 import phantom.app as phantom
 from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
 
-from microsoftazuresql_consts import *
+# from microsoftazuresql_consts import *
 import json
 import binascii
 import requests
+from bs4 import BeautifulSoup
 
 
 class RetVal(tuple):
@@ -120,7 +119,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
     def _get_query_results(self, action_result):
 
         try:
-
             results = []
             columns = self._cursor.description
 
@@ -178,10 +176,20 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             return action_result.set_status(phantom.APP_ERROR, "The specified table could not be found")
         elif check_single and len(results) > 1:  # There is more than 1 table
             return action_result.set_status(
-                phantom.APP_ERROR, "More than 1 table has that name, specify a table schema"
+                phantom.APP_ERROR, "More than 1 table has that name. Please specify a table schema to distinguish the table"
             )
 
         return phantom.APP_SUCCESS
+
+    def _check_server(self, connection_string):
+        # Checking if the Server field of the Custom Connection String is filled out
+        values = connection_string.split(';')
+        length = 0
+        for value in values:
+            if value.startswith('Server'):
+                length = len(value.replace('Server=', ''))
+                break
+        return length
 
     def _handle_test_connectivity(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
@@ -329,12 +337,17 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         config = self.get_config()
         # get the asset config
         if config.get('connection_string'):
-            connection_string = config.get('connection_string')
+            connection_string = config['connection_string']
+            if self._check_server(connection_string) == 0:
+                return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing Server/IP Address field")
         else:
             config = self.get_config()
             username = config.get('username')
             password = config.get('password')
-            host = config.get('host')
+            try:
+                host = config['host']
+            except Exception:
+                return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing Server/IP Address field")
             database = config.get('database')
             if config.get('driver'):
                 driver = config['driver']

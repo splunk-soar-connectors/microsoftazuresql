@@ -164,7 +164,7 @@
                     "data_path": "action_result.data.*.TABLE_CATALOG",
                     "data_type": "string",
                     "example_values": [
-                        "ricardo"
+                        "sampledb"
                     ],
                     "contains": [
                         "azuresql table catalog"
@@ -323,7 +323,7 @@
                     "data_type": "boolean",
                     "required": false,
                     "primary": false,
-                    "order": 2
+                    "order": 1
                 }
             },
             "output": [
