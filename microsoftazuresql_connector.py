@@ -298,7 +298,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         for row in results:
             action_result.add_data(
-                {key: str(value) for key, value in row.items()}
+                {key: unicode(value) for key, value in row.items()}
             )
 
         summary = action_result.update_summary({})
