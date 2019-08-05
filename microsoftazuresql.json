@@ -1,0 +1,405 @@
+{
+    "appid": "f0339ff8-b46e-45ec-b754-016b35f97370",
+    "name": "Microsoft Azure SQL",
+    "description": "This app supports investigative actions against a Microsoft Azure SQL Server",
+    "type": "information",
+    "product_vendor": "Microsoft",
+    "logo": "microsoftazuresql.svg",
+    "logo_dark": "microsoftazuresql_dark.svg",
+    "product_name": "Azure SQL",
+    "product_version_regex": ".*",
+    "publisher": "Splunk",
+    "license": "Copyright (c) 2019 Splunk Inc.",
+    "app_version": "1.0.0",
+    "utctime_updated": "2019-07-09T17:20:42.341345Z",
+    "package_name": "phantom_microsoftazuresql",
+    "main_module": "microsoftazuresql_connector.pyc",
+    "min_phantom_version": "4.2.7532",
+    "app_wizard_version": "1.0.0",
+    "pip_dependencies": {
+        "wheel": [
+            {
+                "module": "pyodbc",
+                "input_file": "wheels/pyodbc-4.0.26-cp27-cp27mu-linux_x86_64.whl"
+            }
+        ]
+    },
+    "configuration": {
+        "username": {
+            "description": "Username",
+            "data_type": "string",
+            "required": false,
+            "order": 0
+        },
+        "password": {
+            "description": "Password",
+            "data_type": "password",
+            "required": false,
+            "order": 1
+        },
+        "host": {
+            "description": "Server or IP Address",
+            "data_type": "string",
+            "required": false,
+            "order": 2
+        },
+        "database": {
+            "description": "Database",
+            "data_type": "string",
+            "required": false,
+            "order": 3
+        },
+        "driver": {
+            "description": "ODBC Driver for SQL Server",
+            "data_type": "string",
+            "required": false,
+            "order": 4
+        },
+        "trust_server": {
+            "description": "Trust Server Certificate",
+            "data_type": "boolean",
+            "default": true,
+            "required": false,
+            "order": 5
+        },
+        "connection_string": {
+            "description": "Custom Connection String",
+            "data_type": "password",
+            "required": false,
+            "order": 6
+        }
+    },
+    "actions": [
+        {
+            "action": "test connectivity",
+            "identifier": "test_connectivity",
+            "description": "Validate the asset configuration for connectivity using supplied configuration",
+            "verbose": "",
+            "type": "test",
+            "read_only": true,
+            "parameters": {},
+            "output": [],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list tables",
+            "identifier": "list_tables",
+            "description": "Lists all the tables in the database connected to in your asset",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "table_schema": {
+                    "description": "Returns the tables only belonging to this schema",
+                    "data_type": "string",
+                    "required": false,
+                    "primary": true,
+                    "contains": [
+                        "azuresql table schema"
+                    ],
+                    "order": 0
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.TABLE_NAME",
+                    "data_type": "string",
+                    "example_values": [
+                        "Customer",
+                        "BuildVersion"
+                    ],
+                    "contains": [
+                        "azuresql table name"
+                    ],
+                    "column_name": "Table Name",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully listed tables",
+                        "Num tables: 12"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_tables",
+                    "data_type": "numeric",
+                    "example_values": [
+                        12,
+                        2
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.table_schema",
+                    "data_type": "string",
+                    "example_values": [
+                        "dbo"
+                    ],
+                    "contains": [
+                        "azuresql table schema"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.TABLE_CATALOG",
+                    "data_type": "string",
+                    "example_values": [
+                        "sampledb"
+                    ],
+                    "contains": [
+                        "azuresql table catalog"
+                    ],
+                    "column_name": "Database",
+                    "column_order": 2
+                },
+                {
+                    "data_path": "action_result.data.*.TABLE_SCHEMA",
+                    "data_type": "string",
+                    "example_values": [
+                        "SalesLT"
+                    ],
+                    "contains": [
+                        "azuresql table schema"
+                    ],
+                    "column_name": "Schema",
+                    "column_order": 1
+                }
+            ],
+            "render": {
+                "type": "table"
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "list columns",
+            "identifier": "list_columns",
+            "description": "Lists all the columns of a table existing within the database connected to in your asset",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "table_name": {
+                    "description": "Returns the columns belonging to this table",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "contains": [
+                        "azuresql table name"
+                    ],
+                    "order": 0
+                },
+                "table_schema": {
+                    "description": "Table Schema",
+                    "data_type": "string",
+                    "required": false,
+                    "primary": true,
+                    "contains": [
+                        "azuresql table schema"
+                    ],
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.TABLE_NAME",
+                    "data_type": "string",
+                    "example_values": [
+                        "vProductModelCatalogDescription"
+                    ],
+                    "contains": [
+                        "azuresql table name"
+                    ],
+                    "column_name": "Table Name",
+                    "column_order": 1
+                },
+                {
+                    "data_path": "action_result.data.*.COLUMN_NAME",
+                    "data_type": "string",
+                    "example_values": [
+                        "ProductModelID"
+                    ],
+                    "column_name": "Column Name",
+                    "column_order": 0
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Num columns: 25"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.table_schema",
+                    "data_type": "string",
+                    "example_values": [
+                        "SalesLT"
+                    ],
+                    "contains": [
+                        "azuresql table schema"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.table_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "vProductModelCatalogDescription"
+                    ],
+                    "contains": [
+                        "azuresql table name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_columns",
+                    "data_type": "numeric",
+                    "example_values": [
+                        25
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                }
+            ],
+            "render": {
+                "type": "table"
+            },
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "run query",
+            "identifier": "run_query",
+            "description": "Run a query against a table or tables in the database",
+            "type": "investigate",
+            "read_only": false,
+            "parameters": {
+                "query": {
+                    "description": "Query string",
+                    "data_type": "string",
+                    "required": true,
+                    "primary": true,
+                    "contains": [
+                        "sql query"
+                    ],
+                    "order": 0
+                },
+                "no_commit": {
+                    "description": "Do not commit changes to the Database",
+                    "data_type": "boolean",
+                    "required": false,
+                    "primary": false,
+                    "order": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.status",
+                    "data_type": "string",
+                    "example_values": [
+                        "success"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.CategoryName",
+                    "data_type": "string",
+                    "example_values": [
+                        "Road Frames"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.ProductName",
+                    "data_type": "string",
+                    "example_values": [
+                        "HL Road Frame - Black, 58"
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully ran query"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.query",
+                    "data_type": "string",
+                    "example_values": [
+                        "SELECT TOP 20 pc.Name as CategoryName, p.name as ProductName FROM [SalesLT].[ProductCategory] pc JOIN [SalesLT].[Product] p ON pc.productcategoryid = p.productcategoryid"
+                    ],
+                    "contains": [
+                        "sql query"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.no_commit",
+                    "data_type": "boolean",
+                    "example_values": [
+                        true,
+                        false
+                    ]
+                },
+                {
+                    "data_path": "action_result.summary.num_rows",
+                    "data_type": "numeric",
+                    "example_values": [
+                        20
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                }
+            ],
+            "render": {
+                "type": "custom",
+                "view": "microsoftsqlserver_view.display_query_results"
+            },
+            "versions": "EQ(*)"
+        }
+    ]
+}
