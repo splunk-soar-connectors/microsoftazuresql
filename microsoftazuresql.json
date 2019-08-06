@@ -397,7 +397,7 @@
             ],
             "render": {
                 "type": "custom",
-                "view": "microsoftsqlserver_view.display_query_results"
+                "view": "microsoftazuresql_view.display_query_results"
             },
             "versions": "EQ(*)"
         }
