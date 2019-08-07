@@ -13,6 +13,7 @@ from phantom.action_result import ActionResult
 import json
 import binascii
 import requests
+import re
 from bs4 import BeautifulSoup
 
 
@@ -136,7 +137,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
                     results.append(column_dict)
             else:
-                results = []
+                results = [{"Status": "Successfully executed SQL statement"}]
         except Exception as e:
             return RetVal(action_result.set_status(
                 phantom.APP_ERROR,
@@ -280,8 +281,11 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query)
         except Exception as e:
+            message = re.search('\[SQL Server\](.+?)\(', e.args[1])
+            if message:
+                found = message.group(1)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error running query", e
+                phantom.APP_ERROR, "Error running query", found
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -304,7 +308,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         summary = action_result.update_summary({})
         summary['num_rows'] = len(results)
 
-        return action_result.set_status(phantom.APP_SUCCESS, "Successfully ran query")
+        return action_result.set_status(phantom.APP_SUCCESS)
 
     def handle_action(self, param):
 
