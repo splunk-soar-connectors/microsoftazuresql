@@ -281,7 +281,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query)
         except Exception as e:
-            message = re.search('\[SQL Server\](.+?)\(', e.args[1])
+            message = re.search('\\[SQL Server\\](.+?)\\(', e.args[1])
             if message:
                 found = message.group(1)
             return action_result.set_status(
