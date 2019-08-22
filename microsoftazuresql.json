@@ -74,7 +74,6 @@
             "action": "test connectivity",
             "identifier": "test_connectivity",
             "description": "Validate the asset configuration for connectivity using supplied configuration",
-            "verbose": "",
             "type": "test",
             "read_only": true,
             "parameters": {},
@@ -104,50 +103,8 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                        "success"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.TABLE_NAME",
-                    "data_type": "string",
-                    "example_values": [
-                        "Customer",
-                        "BuildVersion"
-                    ],
-                    "contains": [
-                        "azuresql table name"
-                    ],
-                    "column_name": "Table Name",
-                    "column_order": 0
-                },
-                {
-                    "data_path": "action_result.message",
-                    "data_type": "string",
-                    "example_values": [
-                        "Successfully listed tables",
-                        "Num tables: 12"
-                    ]
-                },
-                {
-                    "data_path": "action_result.summary.num_tables",
-                    "data_type": "numeric",
-                    "example_values": [
-                        12,
-                        2
-                    ]
-                },
-                {
-                    "data_path": "summary.total_objects",
-                    "data_type": "numeric",
-                    "example_values": [
-                        1
-                    ]
-                },
-                {
-                    "data_path": "summary.total_objects_successful",
-                    "data_type": "numeric",
-                    "example_values": [
-                        1
+                        "success",
+                        "failed"
                     ]
                 },
                 {
@@ -173,6 +130,19 @@
                     "column_order": 2
                 },
                 {
+                    "data_path": "action_result.data.*.TABLE_NAME",
+                    "data_type": "string",
+                    "example_values": [
+                        "Customer",
+                        "BuildVersion"
+                    ],
+                    "contains": [
+                        "azuresql table name"
+                    ],
+                    "column_name": "Table Name",
+                    "column_order": 0
+                },
+                {
                     "data_path": "action_result.data.*.TABLE_SCHEMA",
                     "data_type": "string",
                     "example_values": [
@@ -183,6 +153,36 @@
                     ],
                     "column_name": "Schema",
                     "column_order": 1
+                },
+                {
+                    "data_path": "action_result.summary.num_tables",
+                    "data_type": "numeric",
+                    "example_values": [
+                        12,
+                        2
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Successfully listed tables",
+                        "Num tables: 12"
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                },
+                {
+                    "data_path": "summary.total_objects_successful",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
                 }
             ],
             "render": {
@@ -223,8 +223,38 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                        "success"
+                        "success",
+                        "failed"
                     ]
+                },
+                {
+                    "data_path": "action_result.parameter.table_name",
+                    "data_type": "string",
+                    "example_values": [
+                        "vProductModelCatalogDescription"
+                    ],
+                    "contains": [
+                        "azuresql table name"
+                    ]
+                },
+                {
+                    "data_path": "action_result.parameter.table_schema",
+                    "data_type": "string",
+                    "example_values": [
+                        "SalesLT"
+                    ],
+                    "contains": [
+                        "azuresql table schema"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.COLUMN_NAME",
+                    "data_type": "string",
+                    "example_values": [
+                        "ProductModelID"
+                    ],
+                    "column_name": "Column Name",
+                    "column_order": 0
                 },
                 {
                     "data_path": "action_result.data.*.TABLE_NAME",
@@ -239,46 +269,17 @@
                     "column_order": 1
                 },
                 {
-                    "data_path": "action_result.data.*.COLUMN_NAME",
-                    "data_type": "string",
+                    "data_path": "action_result.summary.num_columns",
+                    "data_type": "numeric",
                     "example_values": [
-                        "ProductModelID"
-                    ],
-                    "column_name": "Column Name",
-                    "column_order": 0
+                        25
+                    ]
                 },
                 {
                     "data_path": "action_result.message",
                     "data_type": "string",
                     "example_values": [
                         "Num columns: 25"
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.table_schema",
-                    "data_type": "string",
-                    "example_values": [
-                        "SalesLT"
-                    ],
-                    "contains": [
-                        "azuresql table schema"
-                    ]
-                },
-                {
-                    "data_path": "action_result.parameter.table_name",
-                    "data_type": "string",
-                    "example_values": [
-                        "vProductModelCatalogDescription"
-                    ],
-                    "contains": [
-                        "azuresql table name"
-                    ]
-                },
-                {
-                    "data_path": "action_result.summary.num_columns",
-                    "data_type": "numeric",
-                    "example_values": [
-                        25
                     ]
                 },
                 {
@@ -305,7 +306,7 @@
             "action": "run query",
             "identifier": "run_query",
             "description": "Run a query against a table or tables in the database",
-            "type": "investigate",
+            "type": "generic",
             "read_only": false,
             "parameters": {
                 "query": {
@@ -322,7 +323,6 @@
                     "description": "Do not commit changes to the Database",
                     "data_type": "boolean",
                     "required": false,
-                    "primary": false,
                     "order": 1
                 }
             },
@@ -331,28 +331,16 @@
                     "data_path": "action_result.status",
                     "data_type": "string",
                     "example_values": [
-                        "success"
+                        "success",
+                        "failed"
                     ]
                 },
                 {
-                    "data_path": "action_result.data.*.CategoryName",
-                    "data_type": "string",
+                    "data_path": "action_result.parameter.no_commit",
+                    "data_type": "boolean",
                     "example_values": [
-                        "Road Frames"
-                    ]
-                },
-                {
-                    "data_path": "action_result.data.*.ProductName",
-                    "data_type": "string",
-                    "example_values": [
-                        "HL Road Frame - Black, 58"
-                    ]
-                },
-                {
-                    "data_path": "action_result.message",
-                    "data_type": "string",
-                    "example_values": [
-                        "Successfully ran query"
+                        true,
+                        false
                     ]
                 },
                 {
@@ -366,11 +354,17 @@
                     ]
                 },
                 {
-                    "data_path": "action_result.parameter.no_commit",
-                    "data_type": "boolean",
+                    "data_path": "action_result.data.*.CategoryName",
+                    "data_type": "string",
                     "example_values": [
-                        true,
-                        false
+                        "Test Frames"
+                    ]
+                },
+                {
+                    "data_path": "action_result.data.*.ProductName",
+                    "data_type": "string",
+                    "example_values": [
+                        "Test Frame - Black, 58"
                     ]
                 },
                 {
@@ -378,6 +372,13 @@
                     "data_type": "numeric",
                     "example_values": [
                         20
+                    ]
+                },
+                {
+                    "data_path": "action_result.message",
+                    "data_type": "string",
+                    "example_values": [
+                        "Num rows: 20"
                     ]
                 },
                 {
