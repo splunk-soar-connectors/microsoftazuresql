@@ -1,0 +1,4 @@
+[submodule "wheels"]
+	path = wheels
+	url = git@cd.splunkdev.com:phantom-external/azuresql_wheel.git
+	ignore = dirty
