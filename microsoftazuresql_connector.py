@@ -1,5 +1,5 @@
 # File: microsoftazuresql_connector.py
-# Copyright (c) 2019 Splunk Inc.
+# Copyright (c) 2019-2021 Splunk Inc.
 #
 # SPLUNK CONFIDENTIAL - Use or disclosure of this material in whole or in part
 # without a valid written license from Splunk Inc. is PROHIBITED.
@@ -45,7 +45,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if response.status_code == 200 or response.status_code == 202:
             return RetVal(phantom.APP_SUCCESS, {})
 
-        return RetVal(action_result.set_status(phantom.APP_ERROR, u"Empty response and no information in the header"), None)
+        return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
 
     def _process_html_response(self, response, action_result):
 
@@ -54,17 +54,20 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         try:
             soup = BeautifulSoup(response.text, "html.parser")
+            # Remove the script, style, footer and navigation part from the HTML message
+            for element in soup(["script", "style", "footer", "nav"]):
+                element.extract()
             error_text = soup.text
             split_lines = error_text.split('\n')
             split_lines = [x.strip() for x in split_lines if x.strip()]
-            error_text = u'\n'.join(split_lines)
+            error_text = '\n'.join(split_lines)
         except:
-            error_text = u"Cannot parse error details"
+            error_text = "Cannot parse error details"
 
-        message = u"Status Code: {0}. Data from server:\n{1}\n".format(status_code,
+        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
                 error_text)
 
-        message = message.replace(u'{', u'{{').replace(u'}', u'}}')
+        message = message.replace('{', '{{').replace('}', '}}')
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
@@ -74,15 +77,15 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, u"Unable to parse JSON response. Error: {0}".format(str(e))), None)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         # You should process the error returned in the json
-        message = u"Error from server. Status Code: {0} Data from server: {1}".format(
-                r.status_code, r.text.replace(u'{', u'{{').replace(u'}', u'}}'))
+        message = "Error from server. Status Code: {0} Data from server: {1}".format(
+                r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
@@ -112,7 +115,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             return self._process_empty_reponse(r, action_result)
 
         # everything else is actually an error at this point
-        message = u"Can't process response from server. Status Code: {0} Data from server: {1}".format(
+        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
                 r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
@@ -302,7 +305,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         for row in results:
             action_result.add_data(
-                {key: unicode(value) for key, value in row.items()}
+                {key: str(value) for key, value in row.items()}
             )
 
         summary = action_result.update_summary({})
@@ -343,7 +346,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if config.get('connection_string'):
             connection_string = config['connection_string']
             if self._check_server(connection_string) == 0:
-                return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing Server/IP Address field")
+                return self.set_status(phantom.APP_ERROR, "{} Failed due to missing Server/IP Address field".format(self.get_action_identifier()))
         else:
             config = self.get_config()
             username = config.get('username')
@@ -364,7 +367,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                             TrustServerCertificate={trust_server};Trusted_Connection=no;
                             Connection Timeout=30;""".format(driver=driver, host=host, database=database, uid=username, pwd=password, trust_server=trust_server)
 
-        self.debug_print(connection_string)
         # Check to see if user has installed the pyodbc driver
         try:
             import pyodbc
@@ -414,9 +416,10 @@ if __name__ == '__main__':
         password = getpass.getpass("Password: ")
 
     if (username and password):
+        login_url = BaseConnector._get_phantom_base_url() + "login"
         try:
-            print ("Accessing the Login page")
-            r = requests.get("https://127.0.0.1/login", verify=False)
+            print("Accessing the Login page")
+            r = requests.get(login_url, verify=False)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -428,11 +431,11 @@ if __name__ == '__main__':
             headers['Cookie'] = 'csrftoken=' + csrftoken
             headers['Referer'] = 'https://127.0.0.1/login'
 
-            print ("Logging into Platform to get the session id")
+            print("Logging into Platform to get the session id")
             r2 = requests.post("https://127.0.0.1/login", verify=False, data=data, headers=headers)
             session_id = r2.cookies['sessionid']
         except Exception as e:
-            print ("Unable to get session id from the platfrom. Error: " + str(e))
+            print("Unable to get session id from the platfrom. Error: " + str(e))
             exit(1)
 
     with open(args.input_test_json) as f:
@@ -448,6 +451,6 @@ if __name__ == '__main__':
             connector._set_csrf_info(csrftoken, headers['Referer'])
 
         ret_val = connector._handle_action(json.dumps(in_json), None)
-        print (json.dumps(json.loads(ret_val), indent=4))
+        print(json.dumps(json.loads(ret_val), indent=4))
 
     exit(0)
