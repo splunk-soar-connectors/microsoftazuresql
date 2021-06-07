@@ -4,23 +4,35 @@
     "description": "This app supports investigative actions against a Microsoft Azure SQL Server",
     "type": "information",
     "product_vendor": "Microsoft",
-    "logo": "microsoftazuresql.svg",
-    "logo_dark": "microsoftazuresql_dark.svg",
+    "logo": "logo_microsoftazuresql.svg",
+    "logo_dark": "logo_microsoftazuresql_dark.svg",
     "product_name": "Azure SQL",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) 2019 Splunk Inc.",
-    "app_version": "1.0.6",
-    "utctime_updated": "2019-08-23T17:53:34.000000Z",
+    "license": "Copyright (c) 2019-2021 Splunk Inc.",
+    "app_version": "2.0.2",
+    "utctime_updated": "2021-06-07T17:36:53.000000Z",
     "package_name": "phantom_microsoftazuresql",
-    "main_module": "microsoftazuresql_connector.pyc",
-    "min_phantom_version": "4.2.7532",
+    "main_module": "microsoftazuresql_connector.py",
+    "min_phantom_version": "4.9.39220",
     "app_wizard_version": "1.0.0",
+    "python_version": "3",
+    "latest_tested_versions": [
+        "Azure SQL Server v12.0.2000.8"
+    ],
+    "pip3_dependencies": {
+        "wheel": [
+            {
+                "module": "pyodbc",
+                "input_file": "wheels/pyodbc-4.0.30-cp36-cp36m-linux_x86_64.whl"
+            }
+        ]
+    },
     "pip_dependencies": {
         "wheel": [
             {
                 "module": "pyodbc",
-                "input_file": "wheels/pyodbc-4.0.26-cp27-cp27mu-linux_x86_64.whl"
+                "input_file": "wheels/pyodbc-4.0.30-cp27-cp27mu-linux_x86_64.whl"
             }
         ]
     },
@@ -28,44 +40,37 @@
         "username": {
             "description": "Username",
             "data_type": "string",
-            "required": false,
             "order": 0
         },
         "password": {
             "description": "Password",
             "data_type": "password",
-            "required": false,
             "order": 1
         },
         "host": {
             "description": "Server or IP Address",
             "data_type": "string",
-            "required": false,
             "order": 2
         },
         "database": {
             "description": "Database",
             "data_type": "string",
-            "required": false,
             "order": 3
         },
         "driver": {
             "description": "ODBC Driver for SQL Server",
             "data_type": "string",
-            "required": false,
             "order": 4
         },
         "trust_server": {
             "description": "Trust Server Certificate",
             "data_type": "boolean",
             "default": true,
-            "required": false,
             "order": 5
         },
         "connection_string": {
             "description": "Custom Connection String",
             "data_type": "password",
-            "required": false,
             "order": 6
         }
     },
@@ -83,14 +88,13 @@
         {
             "action": "list tables",
             "identifier": "list_tables",
-            "description": "Lists all the tables in the database connected to in your asset",
+            "description": "Lists all the tables in the database connected to your asset",
             "type": "investigate",
             "read_only": true,
             "parameters": {
                 "table_schema": {
                     "description": "Returns the tables only belonging to this schema",
                     "data_type": "string",
-                    "required": false,
                     "primary": true,
                     "contains": [
                         "azuresql table schema"
@@ -193,7 +197,7 @@
         {
             "action": "list columns",
             "identifier": "list_columns",
-            "description": "Lists all the columns of a table existing within the database connected to in your asset",
+            "description": "Lists all the columns of a table existing within the database connected to your asset",
             "type": "investigate",
             "read_only": true,
             "parameters": {
@@ -210,7 +214,6 @@
                 "table_schema": {
                     "description": "Table Schema",
                     "data_type": "string",
-                    "required": false,
                     "primary": true,
                     "contains": [
                         "azuresql table schema"
@@ -322,7 +325,6 @@
                 "no_commit": {
                     "description": "Do not commit changes to the Database",
                     "data_type": "boolean",
-                    "required": false,
                     "order": 1
                 }
             },
