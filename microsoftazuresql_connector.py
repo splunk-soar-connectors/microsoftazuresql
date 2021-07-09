@@ -10,6 +10,7 @@ from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
 
 # from microsoftazuresql_consts import *
+import csv
 import json
 import binascii
 import requests
@@ -277,18 +278,22 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
+    def _get_format_vars(self, param):
+        format_vars = param.get('format_vars', [])
+        if format_vars:
+            format_vars = next(csv.reader([format_vars], quotechar='"', skipinitialspace=True, escapechar='\\'))
+        return format_vars
+
     def _handle_run_query(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
         query = param['query']
+        format_vars = self._get_format_vars(param)
 
         try:
-            self._cursor.execute(query)
+            self._cursor.execute(query, format_vars)
         except Exception as e:
-            message = re.search('\\[SQL Server\\](.+?)\\(', e.args[1])
-            if message:
-                found = message.group(1)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error running query", found
+                phantom.APP_ERROR, "Error running query", e
             )
 
         ret_val, results = self._get_query_results(action_result)
