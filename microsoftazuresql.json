@@ -14,7 +14,8 @@
     "utctime_updated": "2021-07-09T02:52:11.000000Z",
     "package_name": "phantom_microsoftazuresql",
     "main_module": "microsoftazuresql_connector.py",
-    "min_phantom_version": "4.9.39220",
+    "min_phantom_version": "5.0.0",
+    "fips_compliant": true,
     "app_wizard_version": "1.0.0",
     "python_version": "3",
     "latest_tested_versions": [
