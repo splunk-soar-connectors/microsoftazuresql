@@ -20,7 +20,7 @@
     "latest_tested_versions": [
         "Azure SQL Server v12.0.2000.8"
     ],
-    "pip3_dependencies": {
+    "pip_dependencies": {
         "wheel": [
             {
                 "module": "beautifulsoup4",
@@ -40,7 +40,7 @@
             },
             {
                 "module": "pyodbc",
-                "input_file": "wheels/py3/pyodbc-4.0.30-cp36-cp36m-linux_x86_64.whl"
+                "input_file": "wheels/py36/pyodbc-4.0.30-cp36-cp36m-linux_x86_64.whl"
             },
             {
                 "module": "requests",
@@ -52,19 +52,15 @@
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/shared/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     },
-    "pip_dependencies": {
+    "pip39_dependencies": {
         "wheel": [
             {
-                "module": "backports.functools_lru_cache",
-                "input_file": "wheels/shared/backports.functools_lru_cache-1.6.4-py2.py3-none-any.whl"
-            },
-            {
                 "module": "beautifulsoup4",
-                "input_file": "wheels/py2/beautifulsoup4-4.9.1-py2-none-any.whl"
+                "input_file": "wheels/py3/beautifulsoup4-4.9.1-py3-none-any.whl"
             },
             {
                 "module": "certifi",
@@ -80,7 +76,7 @@
             },
             {
                 "module": "pyodbc",
-                "input_file": "wheels/pyodbc-4.0.30-cp27-cp27mu-linux_x86_64.whl"
+                "input_file": "wheels/py39/pyodbc-4.0.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
             },
             {
                 "module": "requests",
@@ -88,11 +84,11 @@
             },
             {
                 "module": "soupsieve",
-                "input_file": "wheels/shared/soupsieve-1.9.6-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/soupsieve-2.3.1-py3-none-any.whl"
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/shared/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     },
