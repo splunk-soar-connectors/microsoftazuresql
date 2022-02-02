@@ -1,4 +1,4 @@
-# File: microsoftazuresql_connector.py
+# File: microsoftazuresql_consts.py
 #
 # Copyright (c) 2019-2021 Splunk Inc.
 #
