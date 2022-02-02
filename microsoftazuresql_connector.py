@@ -359,7 +359,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         config = self.get_config()
         # get the asset config
         if config.get('connection_string'):
-            connection_string = config['connection_string']
+            connection_string = config.get('connection_string')
             if self._check_server(connection_string) == 0:
                 return self.set_status(phantom.APP_ERROR,
                     "{} Failed due to missing Server/IP Address field".format(self.get_action_identifier()))
@@ -367,18 +367,15 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             config = self.get_config()
             username = config.get('username')
             password = config.get('password')
-            try:
-                host = config['host']
-            except Exception:
+            host = config.get('host')
+            if not host:
                 return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing Server/IP Address field")
             database = config.get('database')
             if config.get('driver'):
-                driver = config['driver']
-                driver = '{' + driver + '}'
-            if config.get('trust_server'):
-                trust_server = 'yes'
+                driver = '{{{}}}'.format(config.get('driver'))
             else:
-                trust_server = 'no'
+                driver = ''
+            trust_server = 'yes' if config.get('trust_server') else 'no'
             connection_string = consts.CONNECTION_STRING.format(driver=driver,
                                                                 host=host,
                                                                 database=database,
