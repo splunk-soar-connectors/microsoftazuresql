@@ -9,18 +9,19 @@
     "product_name": "Azure SQL",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) 2019-2021 Splunk Inc.",
+    "license": "Copyright (c) 2019-2022 Splunk Inc.",
     "app_version": "2.1.5",
     "utctime_updated": "2022-01-07T22:12:23.000000Z",
     "package_name": "phantom_microsoftazuresql",
     "main_module": "microsoftazuresql_connector.py",
-    "min_phantom_version": "4.9.39220",
+    "min_phantom_version": "5.1.0",
     "app_wizard_version": "1.0.0",
     "python_version": "3",
+    "fips_compliant": true,
     "latest_tested_versions": [
         "Azure SQL Server v12.0.2000.8"
     ],
-    "pip3_dependencies": {
+    "pip_dependencies": {
         "wheel": [
             {
                 "module": "beautifulsoup4",
@@ -40,7 +41,7 @@
             },
             {
                 "module": "pyodbc",
-                "input_file": "wheels/py3/pyodbc-4.0.30-cp36-cp36m-linux_x86_64.whl"
+                "input_file": "wheels/py36/pyodbc-4.0.30-cp36-cp36m-linux_x86_64.whl"
             },
             {
                 "module": "requests",
@@ -52,19 +53,15 @@
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/shared/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     },
-    "pip_dependencies": {
+    "pip39_dependencies": {
         "wheel": [
             {
-                "module": "backports.functools_lru_cache",
-                "input_file": "wheels/shared/backports.functools_lru_cache-1.6.4-py2.py3-none-any.whl"
-            },
-            {
                 "module": "beautifulsoup4",
-                "input_file": "wheels/py2/beautifulsoup4-4.9.1-py2-none-any.whl"
+                "input_file": "wheels/py3/beautifulsoup4-4.9.1-py3-none-any.whl"
             },
             {
                 "module": "certifi",
@@ -80,7 +77,7 @@
             },
             {
                 "module": "pyodbc",
-                "input_file": "wheels/pyodbc-4.0.30-cp27-cp27mu-linux_x86_64.whl"
+                "input_file": "wheels/py39/pyodbc-4.0.30-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
             },
             {
                 "module": "requests",
@@ -88,11 +85,11 @@
             },
             {
                 "module": "soupsieve",
-                "input_file": "wheels/shared/soupsieve-1.9.6-py2.py3-none-any.whl"
+                "input_file": "wheels/py3/soupsieve-2.3.1-py3-none-any.whl"
             },
             {
                 "module": "urllib3",
-                "input_file": "wheels/shared/urllib3-1.26.7-py2.py3-none-any.whl"
+                "input_file": "wheels/shared/urllib3-1.26.8-py2.py3-none-any.whl"
             }
         ]
     },
@@ -369,7 +366,7 @@
             "action": "run query",
             "identifier": "run_query",
             "description": "Run a query against a table or tables in the database",
-            "verbose": "It is recommended to use the <b>format_vars</b> parameter when applicable. For example, if you wanted to find a specific IP, you could set <b>query</b> to a formatted string, like \"select * from my_hosts where ip = ?\" (note the use of <b>?</b>), and set <b>format_vars</b> to the IP address. This will ensure the inputs are safely sanitized and avoid SQL injection attacks.<br>Setting <b>no_commit</b> will make it so the App does not commit any changes made to the database (so you can ensure it's a read-only query).<br><br>The <b>format_vars</b> parameter accepts a comma-separated string. You can escape commas by surrounding them in double quotes, and escape double quotes with a backslash. Assuming you have a list of values for the format vars, you can employ this code in your playbooks to properly format it into a string:<br> <code>format_vars_str = ','.join(['\"{}\"'.format(str(x).replace('\\\\', '\\\\\\\\').replace('\"', '\\\\\"')) for x in format_vars_list])</code>",
+            "verbose": "It is recommended to use the <b>format_vars</b> parameter when applicable. For example, if you wanted to find a specific IP, you could set <b>query</b> to a formatted string, like \"select * from my_hosts where ip = ?\" (note the use of <b>?</b>), and set <b>format_vars</b> to the IP address. This will ensure the inputs are safely sanitized and avoid SQL injection attacks.<br>Setting <b>no_commit</b> will make it so the App does not commit any changes made to the database (so you can ensure it's a read-only query).<br><br>The <b>format_vars</b> parameter accepts a comma-separated string. You can escape commas by surrounding them in double quotes, and escape double quotes with a backslash. Assuming you have a list of values for the format vars, you can employ this code in your playbooks to properly format it into a string:<br> <code>format_vars_str = ','.join(['\"{}\"'.format(str(x).replace('\\\\', '\\\\\\\\').replace('\"', '\\\\\"')) for x in format_vars_list])</code>.",
             "type": "generic",
             "read_only": false,
             "parameters": {
