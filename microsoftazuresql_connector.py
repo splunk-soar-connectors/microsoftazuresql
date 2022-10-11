@@ -20,12 +20,13 @@ import json
 import sys
 
 import phantom.app as phantom
+import pymssql
 import requests
 from bs4 import BeautifulSoup
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
-import microsoftazuresql_consts as consts
+from microsoftazuresql_consts import *
 
 
 class RetVal(tuple):
@@ -50,6 +51,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         else:
             self.set_status(phantom.APP_ERROR, msg, exception)
         return phantom.APP_ERROR
+
+    def _dump_error_log(self, error, message="Exception occurred."):
+        self.error_print(message, dump_object=error)
 
     def _process_empty_reponse(self, response, action_result):
 
@@ -138,21 +142,20 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             columns = self._cursor.description
 
             if columns:
+                self.debug_print("DATTAA: {}".format(columns))
                 for value in self._cursor.fetchall():
-
+                    self.debug_print("DATTAA: {}".format(value))
                     column_dict = {}
 
                     for index, column in enumerate(value):
-
-                        if columns[index][1] == 2 and column is not None:
-                            column = '0x{0}'.format(binascii.hexlify(column).decode().upper())
-
+                        self.debug_print("DATTAA: {} : {}".format(index, column))
                         column_dict[columns[index][0]] = column
-
+                    self.debug_print("COLLL: {}".format(column_dict))
                     results.append(column_dict)
             else:
                 results = [{"Status": "Successfully executed SQL statement"}]
         except Exception as e:
+            self._dump_error_log(e)
             return RetVal(action_result.set_status(
                 phantom.APP_ERROR,
                 "Unable to retrieve results from query",
@@ -161,9 +164,10 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         return RetVal(phantom.APP_SUCCESS, results)
 
     def _check_for_valid_schema(self, action_result, schema):
-        query = "SELECT * FROM sys.schemas WHERE name = " + "'" + schema + "';"
+        format_vars = (schema, )
+        query = "SELECT * FROM sys.schemas WHERE name = %s;"
         try:
-            self._cursor.execute(query)
+            self._cursor.execute(query, format_vars)
         except Exception as e:
             return action_result.set_status(
                 phantom.APP_ERROR, "Error searching for schema", e
@@ -178,9 +182,10 @@ class MicrosoftAzureSqlConnector(BaseConnector):
     def _check_for_valid_table(self, action_result, table, check_single=False):
         # check_single will ensure there is only one table with this name
         # If more are found, it will throw an error saying a schema is required
-        query = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = " + "'" + table + "';"
+        format_vars = (table,)
+        query = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = %s;"
         try:
-            self._cursor.execute(query)
+            self._cursor.execute(query, format_vars)
         except Exception as e:
             return action_result.set_status(
                 phantom.APP_ERROR, "Error searching for table", e
@@ -195,16 +200,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             )
 
         return phantom.APP_SUCCESS
-
-    def _check_server(self, connection_string):
-        # Checking if the Server field of the Custom Connection String is filled out
-        values = connection_string.split(';')
-        length = 0
-        for value in values:
-            if value.startswith('Server'):
-                length = len(value.replace('Server=', ''))
-                break
-        return length
 
     def _handle_test_connectivity(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
@@ -225,16 +220,18 @@ class MicrosoftAzureSqlConnector(BaseConnector):
     def _handle_list_tables(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
         table_schema = param.get('table_schema')
+        dbname = param['database']
 
-        query = "SELECT TABLE_NAME, TABLE_SCHEMA, TABLE_CATALOG FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'"
+        query = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = %s AND TABLE_CATALOG = %s"
 
         if table_schema:
             if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
                 return phantom.APP_ERROR
-            query += " AND TABLE_SCHEMA = " + "'" + table_schema + "'"
-
+            format_vars = ('BASE TABLE', dbname, table_schema)
+        else:
+            format_vars = ('BASE TABLE', dbname)
         try:
-            self._cursor.execute(query)
+            self._cursor.execute(query, format_vars)
         except Exception as e:
             return action_result.set_status(
                 phantom.APP_ERROR, "Error listing tables", e
@@ -256,19 +253,23 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
         table_name = param.get('table_name')
         table_schema = param.get('table_schema')
+        dbname = param['database']
 
         if phantom.is_fail(self._check_for_valid_table(action_result, table_name, not bool(table_schema))):
             return phantom.APP_ERROR
 
-        query = "SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = " + "'" + table_name + "'"
+        query = "SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = %s AND TABLE_CATALOG = %s"
 
         if table_schema:
             if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
                 return phantom.APP_ERROR
-            query += " AND TABLE_SCHEMA = " + "'" + table_schema + "'"
+            query += " AND TABLE_SCHEMA = %s"
+            format_vars = (table_name, dbname, table_schema)
+        else:
+            format_vars = (table_name, dbname)
 
         try:
-            self._cursor.execute(query)
+            self._cursor.execute(query, format_vars)
         except Exception as e:
             return action_result.set_status(
                 phantom.APP_ERROR, "Error listing columns", e
@@ -291,7 +292,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
     def _get_format_vars(self, param):
         format_vars = param.get('format_vars', [])
         if format_vars:
-            format_vars = next(csv.reader([format_vars], quotechar='"', skipinitialspace=True, escapechar='\\'))
+            format_vars = tuple(next(csv.reader([format_vars], quotechar='"', skipinitialspace=True, escapechar='\\')))
         return format_vars
 
     def _handle_run_query(self, param):
@@ -332,6 +333,14 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         ret_val = phantom.APP_SUCCESS
 
+        # To make this app work in a targeted mode where you can specify the
+        # host with each action, the code to connect to the database was moved
+        # from initialize to here.
+        if phantom.is_fail(self._connect_sql(param)):
+            action_result = self.add_action_result(ActionResult(dict(param)))
+            action_result.set_status(phantom.APP_ERROR, "Unable to connect to host: {0}".format(param['host']))
+            return phantom.APP_ERROR
+
         # Get the action that we are supposed to execute for this App Run
         action_id = self.get_action_identifier()
 
@@ -351,53 +360,28 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return ret_val
 
-    def initialize(self):
-
-        # Load the state in initialize, use it to store data
-        # that needs to be accessed across actions
+    def _connect_sql(self, param):
         self._state = self.load_state()
+
         config = self.get_config()
-        # get the asset config
-        if config.get('connection_string'):
-            connection_string = config.get('connection_string')
-            if self._check_server(connection_string) == 0:
-                return self.set_status(phantom.APP_ERROR,
-                    "{} Failed due to missing Server/IP Address field".format(self.get_action_identifier()))
-        else:
-            config = self.get_config()
-            username = config.get('username')
-            password = config.get('password')
-            host = config.get('host')
-            if not host:
-                return self.set_status(phantom.APP_ERROR, "Test Connectivity Failed due to missing Server/IP Address field")
-            database = config.get('database')
-            if config.get('driver'):
-                driver = '{{{}}}'.format(config.get('driver'))
-            else:
-                driver = ''
-            trust_server = 'yes' if config.get('trust_server') else 'no'
-            connection_string = consts.CONNECTION_STRING.format(driver=driver,
-                                                                host=host,
-                                                                database=database,
-                                                                uid=username,
-                                                                pwd=password,
-                                                                trust_server=trust_server)
-
-        # Check to see if user has installed the pyodbc driver
+        param = self.get_current_param()
+        username = config['username']
+        password = config['password']
+        host = config['host']
+        database = param.get('database', config['database'])
+        param['database'] = database
         try:
-            import pyodbc
-        except ImportError:
-            return self.set_status(phantom.APP_ERROR,
-                "Test Connectivity Failed due to missing pyodbc driver. Please install with the instructions in the app's documentation")
-
-        try:
-            self._connection = pyodbc.connect(
-                connection_string
+            self.save_progress("Using pymssql")
+            self._connection = pymssql.connect(
+                server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT
             )
             self._cursor = self._connection.cursor()
         except Exception as e:
             return self._initialize_error("Error authenticating with database", e)
         self.save_progress("Database connection established")
+        return phantom.APP_SUCCESS
+
+    def initialize(self):
         return phantom.APP_SUCCESS
 
     def finalize(self):

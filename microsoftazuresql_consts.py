@@ -16,5 +16,4 @@
 #
 DEFAULT_TIMEOUT = 30
 
-CONNECTION_STRING = "Driver={driver};Server={host},1433;Database={database};Uid={uid};Pwd={pwd};Encrypt=no;" \
-                    "TrustServerCertificate={trust_server};Trusted_Connection=no;Connection Timeout=30;"
+MSAZURESQL_PORT = 1433
