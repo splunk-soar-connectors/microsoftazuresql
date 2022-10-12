@@ -14,7 +14,6 @@
 # and limitations under the License.
 #
 #
-import binascii
 import csv
 import json
 import sys
@@ -92,7 +91,8 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(str(e))), None)
+            err_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(err_msg)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -135,6 +135,32 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
+    def _get_error_message_from_exception(self, e):
+        """ This method is used to get appropriate error message from the exception.
+        :param e: Exception object
+        :return: error message
+        """
+
+        error_code = None
+        error_msg = MSAZURESQL_ERROR_MESSAGE_UNAVAILABLE
+        self._dump_error_log(e)
+        try:
+            if hasattr(e, "args"):
+                if len(e.args) > 1:
+                    error_code = e.args[0]
+                    error_msg = e.args[1]
+                elif len(e.args) == 1:
+                    error_msg = e.args[0]
+        except Exception as ex:
+            self._dump_error_log(ex, "Error occurred while fetching exception information")
+
+        if not error_code:
+            error_text = "Error Message: {}".format(error_msg)
+        else:
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+
+        return error_text
+
     def _get_query_results(self, action_result):
 
         try:
@@ -155,11 +181,11 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             else:
                 results = [{"Status": "Successfully executed SQL statement"}]
         except Exception as e:
-            self._dump_error_log(e)
+            err_msg = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(
                 phantom.APP_ERROR,
-                "Unable to retrieve results from query",
-                e
+                "Unable to retrieve results from query, Error: {}".format(err_msg),
+                None
             ))
         return RetVal(phantom.APP_SUCCESS, results)
 
@@ -169,8 +195,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error searching for schema", e
+                phantom.APP_ERROR, "Error searching for schema, Error: {}".format(err_msg)
             )
 
         results = self._cursor.fetchall()
@@ -187,8 +214,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error searching for table", e
+                phantom.APP_ERROR, "Error searching for table, Error: {}".format(err_msg)
             )
 
         results = self._cursor.fetchall()
@@ -207,8 +235,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Test Connectivity Failed", e
+                phantom.APP_ERROR, "Test Connectivity Failed, Error: {}".format(err_msg)
             )
 
         for row in self._cursor:
@@ -233,8 +262,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error listing tables", e
+                phantom.APP_ERROR, "Error listing tables, Error: {}".format(err_msg)
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -271,8 +301,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error listing columns", e
+                phantom.APP_ERROR, "Error listing columns, Error: {}".format(err_msg)
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -303,8 +334,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
+            err_msg = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error running query", e
+                phantom.APP_ERROR, "Error running query, Error: {}".format(err_msg)
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -315,8 +347,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             try:
                 self._connection.commit()
             except Exception as e:
+                err_msg = self._get_error_message_from_exception(e)
                 return action_result.set_status(
-                    phantom.APP_ERROR, "unable to commit changes", e
+                    phantom.APP_ERROR, "unable to commit changes, Error: {}".format(err_msg)
                 )
 
         for row in results:
@@ -371,7 +404,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         database = param.get('database', config['database'])
         param['database'] = database
         try:
-            self.save_progress("Using pymssql")
             self._connection = pymssql.connect(
                 server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT
             )
@@ -385,7 +417,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         return phantom.APP_SUCCESS
 
     def finalize(self):
-
         # Save the state, this data is saved accross actions and app upgrades
         self.save_state(self._state)
         return phantom.APP_SUCCESS
