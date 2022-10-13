@@ -166,17 +166,11 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             results = []
             columns = self._cursor.description
-
             if columns:
-                self.debug_print("DATTAA: {}".format(columns))
                 for value in self._cursor.fetchall():
-                    self.debug_print("DATTAA: {}".format(value))
                     column_dict = {}
-
                     for index, column in enumerate(value):
-                        self.debug_print("DATTAA: {} : {}".format(index, column))
                         column_dict[columns[index][0]] = column
-                    self.debug_print("COLLL: {}".format(column_dict))
                     results.append(column_dict)
             else:
                 results = [{"Status": "Successfully executed SQL statement"}]
@@ -409,6 +403,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             )
             self._cursor = self._connection.cursor()
         except Exception as e:
+            self._dump_error_log(e)
             return self._initialize_error("Error authenticating with database", e)
         self.save_progress("Database connection established")
         return phantom.APP_SUCCESS
