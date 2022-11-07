@@ -397,6 +397,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         host = config['host']
         database = param.get('database', config['database'])
         param['database'] = database
+        param['host'] = host
         try:
             self._connection = pymssql.connect(
                 server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT
@@ -405,6 +406,11 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         except Exception as e:
             self._dump_error_log(e)
             return self._initialize_error("Error authenticating with database", e)
+
+        # check for the connection to the host
+        if self._cursor is None:
+            return self._initialize_error("Error connecting to host: {}".format(host))
+
         self.save_progress("Database connection established")
         return phantom.APP_SUCCESS
 
@@ -449,7 +455,7 @@ if __name__ == '__main__':
         login_url = BaseConnector._get_phantom_base_url() + "login"
         try:
             print("Accessing the Login page")
-            r = requests.get(login_url, verify=verify, timeout=consts.DEFAULT_TIMEOUT)
+            r = requests.get(login_url, verify=verify, timeout=DEFAULT_TIMEOUT)
             csrftoken = r.cookies['csrftoken']
 
             data = dict()
@@ -462,7 +468,7 @@ if __name__ == '__main__':
             headers['Referer'] = 'https://127.0.0.1/login'
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post("https://127.0.0.1/login", verify=verify, data=data, headers=headers, timeout=consts.DEFAULT_TIMEOUT)
+            r2 = requests.post("https://127.0.0.1/login", verify=verify, data=data, headers=headers, timeout=DEFAULT_TIMEOUT)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platfrom. Error: {}".format(e))
