@@ -14,14 +14,18 @@
 # and limitations under the License.
 #
 #
+import binascii
 import csv
+import datetime
 import json
+import struct
 import sys
 
 import phantom.app as phantom
 import pymssql
 import requests
 from bs4 import BeautifulSoup
+from dateutil.tz import tzoffset
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
 
@@ -142,34 +146,57 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         """
 
         error_code = None
-        error_msg = MSAZURESQL_ERROR_MESSAGE_UNAVAILABLE
+        error_message = MSAZURESQL_ERROR_MESSAGE_UNAVAILABLE
         self._dump_error_log(e)
         try:
             if hasattr(e, "args"):
                 if len(e.args) > 1:
                     error_code = e.args[0]
-                    error_msg = e.args[1]
+                    error_message = e.args[1]
                 elif len(e.args) == 1:
-                    error_msg = e.args[0]
+                    error_message = e.args[0]
         except Exception as ex:
             self._dump_error_log(ex, "Error occurred while fetching exception information")
 
         if not error_code:
-            error_text = "Error Message: {}".format(error_msg)
+            error_text = "Error Message: {}".format(error_message)
         else:
-            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_msg)
+            error_text = "Error Code: {}. Error Message: {}".format(error_code, error_message)
 
         return error_text
+
+    def _bytes_to_date(self, binary_str):
+        unpacked = struct.unpack('QIhH', binary_str)
+        m = []
+        for tup in unpacked:
+            m.append(tup)
+
+        days = m[1]
+        microseconds = m[0] / 10 if m[0] else 0
+
+        timezone = m[2]
+        tz = tzoffset('ANY', timezone * 60)
+        date = datetime.datetime(*[1900, 1, 1, 0, 0, 0], tzinfo=tz)
+        td = datetime.timedelta(days=days, minutes=m[2], microseconds=microseconds)
+        date += td
+        return date
 
     def _get_query_results(self, action_result):
 
         try:
             results = []
             columns = self._cursor.description
+            self.debug_print("Column: {}".format(columns))
             if columns:
                 for value in self._cursor.fetchall():
                     column_dict = {}
                     for index, column in enumerate(value):
+                        if columns[index][1] == 2 and column is not None and isinstance(column, bytes):
+                            try:
+                                date_from_byte = self._bytes_to_date(column)
+                                column = str(date_from_byte)
+                            except:
+                                column = '0x{0}'.format(binascii.hexlify(column).decode().upper())
                         column_dict[columns[index][0]] = column
                     results.append(column_dict)
             else:
@@ -445,13 +472,13 @@ if __name__ == '__main__':
     password = args.password
     verify = args.verify
 
-    if (username is not None and password is None):
+    if username is not None and password is None:
 
         # User specified a username but not a password, so ask
         import getpass
         password = getpass.getpass("Password: ")
 
-    if (username and password):
+    if username and password:
         login_url = BaseConnector._get_phantom_base_url() + "login"
         try:
             print("Accessing the Login page")
@@ -482,7 +509,7 @@ if __name__ == '__main__':
         connector = MicrosoftAzureSqlConnector()
         connector.print_progress_message = True
 
-        if (session_id is not None):
+        if session_id is not None:
             in_json['user_session_token'] = session_id
             connector._set_csrf_info(csrftoken, headers['Referer'])
 
