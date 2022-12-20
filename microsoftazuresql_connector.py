@@ -186,7 +186,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             results = []
             columns = self._cursor.description
-            self.debug_print("Column: {}".format(columns))
+            summary = action_result.update_summary({})
             if columns:
                 for value in self._cursor.fetchall():
                     column_dict = {}
@@ -199,8 +199,10 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                                 column = '0x{0}'.format(binascii.hexlify(column).decode().upper())
                         column_dict[columns[index][0]] = column
                     results.append(column_dict)
+                summary['num_rows'] = len(results)
             else:
                 results = [{"Status": "Successfully executed SQL statement"}]
+                summary['num_rows'] = 0
         except Exception as e:
             err_msg = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(
@@ -351,13 +353,12 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
         query = param['query']
         format_vars = self._get_format_vars(param)
-
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error running query, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Error running query, Error: {}".format(error_message)
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -368,18 +369,15 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             try:
                 self._connection.commit()
             except Exception as e:
-                err_msg = self._get_error_message_from_exception(e)
+                error_message = self._get_error_message_from_exception(e)
                 return action_result.set_status(
-                    phantom.APP_ERROR, "unable to commit changes, Error: {}".format(err_msg)
+                    phantom.APP_ERROR, "unable to commit changes, Error: {}".format(error_message)
                 )
 
         for row in results:
             action_result.add_data(
                 {key: str(value) for key, value in row.items()}
             )
-
-        summary = action_result.update_summary({})
-        summary['num_rows'] = len(results)
 
         return action_result.set_status(phantom.APP_SUCCESS)
 
