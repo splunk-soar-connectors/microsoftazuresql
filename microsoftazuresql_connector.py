@@ -95,8 +95,8 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             resp_json = r.json()
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(err_msg)), None)
+            error_msg = self._get_error_message_from_exception(e)
+            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_msg)), None)
 
         # Please specify the status codes here
         if 200 <= r.status_code < 399:
@@ -204,10 +204,10 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                 results = [{"Status": "Successfully executed SQL statement"}]
                 summary['num_rows'] = 0
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(
                 phantom.APP_ERROR,
-                "Unable to retrieve results from query, Error: {}".format(err_msg),
+                "Unable to retrieve results from query, Error: {}".format(error_message),
                 None
             ))
         return RetVal(phantom.APP_SUCCESS, results)
@@ -218,9 +218,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error searching for schema, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Error searching for schema, Error: {}".format(error_message)
             )
 
         results = self._cursor.fetchall()
@@ -237,9 +237,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error searching for table, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Error searching for table, Error: {}".format(error_message)
             )
 
         results = self._cursor.fetchall()
@@ -258,9 +258,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Test Connectivity Failed, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Test Connectivity Failed, Error: {}".format(error_message)
             )
 
         for row in self._cursor:
@@ -285,9 +285,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error listing tables, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Error listing tables, Error: {}".format(error_message)
             )
 
         ret_val, results = self._get_query_results(action_result)
@@ -324,9 +324,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             self._cursor.execute(query, format_vars)
         except Exception as e:
-            err_msg = self._get_error_message_from_exception(e)
+            error_message = self._get_error_message_from_exception(e)
             return action_result.set_status(
-                phantom.APP_ERROR, "Error listing columns, Error: {}".format(err_msg)
+                phantom.APP_ERROR, "Error listing columns, Error: {}".format(error_message)
             )
 
         ret_val, results = self._get_query_results(action_result)
