@@ -279,6 +279,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if table_schema:
             if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
                 return phantom.APP_ERROR
+            query += "AND TABLE_SCHEMA = %s"
             format_vars = ('BASE TABLE', dbname, table_schema)
         else:
             format_vars = ('BASE TABLE', dbname)
@@ -429,7 +430,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             )
             self._cursor = self._connection.cursor()
         except Exception as e:
-            self._dump_error_log(e)
             return self._initialize_error("Error authenticating with database", e)
 
         # check for the connection to the host
