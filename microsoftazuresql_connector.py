@@ -60,7 +60,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
     def _process_empty_reponse(self, response, action_result):
 
-        if response.status_code == 200 or response.status_code == 202:
+        if response.status_code in MSAZURESQL_EMPTY_STATUS_CODES:
             return RetVal(phantom.APP_SUCCESS, {})
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
@@ -103,7 +103,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             return RetVal(phantom.APP_SUCCESS, resp_json)
 
         # You should process the error returned in the json
-        message = "Error from server. Status Code: {0} Data from server: {1}".format(
+        message = "Error from server. Status Code: {0} Response from server: {1}".format(
                 r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
@@ -134,7 +134,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             return self._process_empty_reponse(r, action_result)
 
         # everything else is actually an error at this point
-        message = "Can't process response from server. Status Code: {0} Data from server: {1}".format(
+        message = "Can't process response from server. Status Code: {0} Response from server: {1}".format(
                 r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
 
         return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
@@ -167,18 +167,18 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
     def _bytes_to_date(self, binary_str):
         unpacked = struct.unpack('QIhH', binary_str)
-        m = []
+        date_fields = []
         for tup in unpacked:
-            m.append(tup)
+            date_fields.append(tup)
 
-        days = m[1]
-        microseconds = m[0] / 10 if m[0] else 0
+        days = date_fields[1]
+        microseconds = date_fields[0] / 10 if date_fields[0] else 0
 
-        timezone = m[2]
-        tz = tzoffset('ANY', timezone * 60)
-        date = datetime.datetime(*[1900, 1, 1, 0, 0, 0], tzinfo=tz)
-        td = datetime.timedelta(days=days, minutes=m[2], microseconds=microseconds)
-        date += td
+        timezone = date_fields[2]
+        time_zone = tzoffset('ANY', timezone * 60)
+        date = datetime.datetime(*[1900, 1, 1, 0, 0, 0], tzinfo=time_zone)
+        time_date = datetime.timedelta(days=days, minutes=date_fields[2], microseconds=microseconds)
+        date += time_date
         return date
 
     def _get_query_results(self, action_result):
@@ -186,7 +186,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         try:
             results = []
             columns = self._cursor.description
-            summary = action_result.update_summary({})
             if columns:
                 for value in self._cursor.fetchall():
                     column_dict = {}
@@ -199,10 +198,8 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                                 column = '0x{0}'.format(binascii.hexlify(column).decode().upper())
                         column_dict[columns[index][0]] = column
                     results.append(column_dict)
-                summary['num_rows'] = len(results)
             else:
-                results = [{"Status": "Successfully executed SQL statement"}]
-                summary['num_rows'] = 0
+                return RetVal(phantom.APP_SUCCESS)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
             return RetVal(action_result.set_status(
@@ -295,6 +292,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return ret_val
 
+        if not isinstance(results, list):
+            results = []
+
         for row in results:
             action_result.add_data(row)
 
@@ -334,6 +334,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if phantom.is_fail(ret_val):
             return ret_val
 
+        if not isinstance(results, list):
+            results = []
+
         for row in results:
             action_result.add_data(row)
 
@@ -365,6 +368,13 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         ret_val, results = self._get_query_results(action_result)
         if phantom.is_fail(ret_val):
             return ret_val
+
+        summary = action_result.update_summary({})
+        if isinstance(results, list):
+            summary["num_rows"] = len(results)
+        else:
+            results = [{"Status": MSAZURESQL_SUCCESS_MESSAGE}]
+            summary["num_rows"] = 0
 
         if not param.get('no_commit', False):
             try:
@@ -490,10 +500,10 @@ if __name__ == '__main__':
 
             headers = dict()
             headers['Cookie'] = 'csrftoken=' + csrftoken
-            headers['Referer'] = 'https://127.0.0.1/login'
+            headers['Referer'] = login_url
 
             print("Logging into Platform to get the session id")
-            r2 = requests.post("https://127.0.0.1/login", verify=verify, data=data, headers=headers, timeout=DEFAULT_TIMEOUT)
+            r2 = requests.post(login_url, verify=verify, data=data, headers=headers, timeout=DEFAULT_TIMEOUT)
             session_id = r2.cookies['sessionid']
         except Exception as e:
             print("Unable to get session id from the platfrom. Error: {}".format(e))

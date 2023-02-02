@@ -18,3 +18,5 @@ DEFAULT_TIMEOUT = 30
 
 MSAZURESQL_PORT = 1433
 MSAZURESQL_ERROR_MESSAGE_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"
+MSAZURESQL_SUCCESS_MESSAGE = "Successfully executed SQL statement"
+MSAZURESQL_EMPTY_STATUS_CODES = [200, 202, 204]
