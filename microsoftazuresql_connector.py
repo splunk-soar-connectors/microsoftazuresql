@@ -24,7 +24,6 @@ import sys
 import phantom.app as phantom
 import pymssql
 import requests
-from bs4 import BeautifulSoup
 from dateutil.tz import tzoffset
 from phantom.action_result import ActionResult
 from phantom.base_connector import BaseConnector
@@ -43,101 +42,23 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         # Call the BaseConnectors init first
         super(MicrosoftAzureSqlConnector, self).__init__()
-        self._state = None
+        self.host = None
+        self.database = None
+        self._cursor = None
 
     def _initialize_error(self, msg, exception=None):
         if self.get_action_identifier() == "test_connectivity":
             self.save_progress(msg)
             if exception:
                 self.save_progress(str(exception))
-            self.set_status(phantom.APP_ERROR, "Test Connectivity Failed")
+            self.save_progress("Test Connectivity Failed")
+            self.set_status(phantom.APP_ERROR)
         else:
             self.set_status(phantom.APP_ERROR, msg, exception)
         return phantom.APP_ERROR
 
     def _dump_error_log(self, error, message="Exception occurred."):
         self.error_print(message, dump_object=error)
-
-    def _process_empty_reponse(self, response, action_result):
-
-        if response.status_code in MSAZURESQL_EMPTY_STATUS_CODES:
-            return RetVal(phantom.APP_SUCCESS, {})
-
-        return RetVal(action_result.set_status(phantom.APP_ERROR, "Empty response and no information in the header"), None)
-
-    def _process_html_response(self, response, action_result):
-
-        # An html response, treat it like an error
-        status_code = response.status_code
-
-        try:
-            soup = BeautifulSoup(response.text, "html.parser")
-            # Remove the script, style, footer and navigation part from the HTML message
-            for element in soup(["script", "style", "footer", "nav"]):
-                element.extract()
-            error_text = soup.text
-            split_lines = error_text.split('\n')
-            split_lines = [x.strip() for x in split_lines if x.strip()]
-            error_text = '\n'.join(split_lines)
-        except:
-            error_text = "Cannot parse error details"
-
-        message = "Status Code: {0}. Data from server:\n{1}\n".format(status_code,
-                error_text)
-
-        message = message.replace('{', '{{').replace('}', '}}')
-
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
-
-    def _process_json_response(self, r, action_result):
-
-        # Try a json parse
-        try:
-            resp_json = r.json()
-        except Exception as e:
-            error_message = self._get_error_message_from_exception(e)
-            return RetVal(action_result.set_status(phantom.APP_ERROR, "Unable to parse JSON response. Error: {0}".format(error_message)), None)
-
-        # Please specify the status codes here
-        if 200 <= r.status_code < 399:
-            return RetVal(phantom.APP_SUCCESS, resp_json)
-
-        # You should process the error returned in the json
-        message = "Error from server. Status Code: {0} Response from server: {1}".format(
-                r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
-
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
-
-    def _process_response(self, r, action_result):
-
-        # store the r_text in debug data, it will get dumped in the logs if the action fails
-        if hasattr(action_result, 'add_debug_data'):
-            action_result.add_debug_data({'r_status_code': r.status_code})
-            action_result.add_debug_data({'r_text': r.text})
-            action_result.add_debug_data({'r_headers': r.headers})
-
-        # Process each 'Content-Type' of response separately
-
-        # Process a json response
-        if 'json' in r.headers.get('Content-Type', '') or 'text/javascript' in r.headers.get('Content-Type', ''):
-            return self._process_json_response(r, action_result)
-
-        # Process an HTML response, Do this no matter what the api talks.
-        # There is a high chance of a PROXY in between phantom and the rest of
-        # world, in case of errors, PROXY's return HTML, this function parses
-        # the error and adds it to the action_result.
-        if 'html' in r.headers.get('Content-Type', ''):
-            return self._process_html_response(r, action_result)
-
-        # it's not content-type that is to be parsed, handle an empty response
-        if not r.text:
-            return self._process_empty_reponse(r, action_result)
-
-        # everything else is actually an error at this point
-        message = "Can't process response from server. Status Code: {0} Response from server: {1}".format(
-                r.status_code, r.text.replace('{', '{{').replace('}', '}}'))
-
-        return RetVal(action_result.set_status(phantom.APP_ERROR, message), None)
 
     def _get_error_message_from_exception(self, e):
         """ This method is used to get appropriate error message from the exception.
@@ -190,7 +111,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
                 for value in self._cursor.fetchall():
                     column_dict = {}
                     for index, column in enumerate(value):
-                        if columns[index][1] == 2 and column is not None and isinstance(column, bytes):
+                        if columns[index][1] == 2 and column and isinstance(column, bytes):
                             try:
                                 date_from_byte = self._bytes_to_date(column)
                                 column = str(date_from_byte)
@@ -256,8 +177,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
             self._cursor.execute(query)
         except Exception as e:
             error_message = self._get_error_message_from_exception(e)
+            self.save_progress("Test Connectivity Failed")
             return action_result.set_status(
-                phantom.APP_ERROR, "Test Connectivity Failed, Error: {}".format(error_message)
+                phantom.APP_ERROR, "Error: {}".format(error_message)
             )
 
         for row in self._cursor:
@@ -269,7 +191,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
     def _handle_list_tables(self, param):
         action_result = self.add_action_result(ActionResult(dict(param)))
         table_schema = param.get('table_schema')
-        dbname = param['database']
+        dbname = self.database
 
         query = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = %s AND TABLE_CATALOG = %s"
 
@@ -307,7 +229,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         action_result = self.add_action_result(ActionResult(dict(param)))
         table_name = param.get('table_name')
         table_schema = param.get('table_schema')
-        dbname = param['database']
+        dbname = self.database
 
         if phantom.is_fail(self._check_for_valid_table(action_result, table_name, not bool(table_schema))):
             return phantom.APP_ERROR
@@ -340,8 +262,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         for row in results:
             action_result.add_data(row)
 
-        if len(results) == 0:
-            return action_result.set_status(phantom.APP_ERROR, "Table does not exist in specified schema")
         summary = action_result.update_summary({})
         summary['num_columns'] = len(results)
 
@@ -396,14 +316,6 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         ret_val = phantom.APP_SUCCESS
 
-        # To make this app work in a targeted mode where you can specify the
-        # host with each action, the code to connect to the database was moved
-        # from initialize to here.
-        if phantom.is_fail(self._connect_sql(param)):
-            action_result = self.add_action_result(ActionResult(dict(param)))
-            action_result.set_status(phantom.APP_ERROR, "Unable to connect to host: {0}".format(param['host']))
-            return phantom.APP_ERROR
-
         # Get the action that we are supposed to execute for this App Run
         action_id = self.get_action_identifier()
 
@@ -423,38 +335,37 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return ret_val
 
-    def _connect_sql(self, param):
-        self._state = self.load_state()
-
+    def _connect_sql(self):
         config = self.get_config()
-        param = self.get_current_param()
         username = config['username']
         password = config['password']
         host = config['host']
-        database = param.get('database', config['database'])
-        param['database'] = database
-        param['host'] = host
+        database = config['database']
         try:
             self._connection = pymssql.connect(
                 server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT
             )
             self._cursor = self._connection.cursor()
         except Exception as e:
-            return self._initialize_error("Error authenticating with database", e)
+            return self._initialize_error("Error occurred while authenticating with database", e)
 
         # check for the connection to the host
         if self._cursor is None:
             return self._initialize_error("Error connecting to host: {}".format(host))
 
+        self.database = database
+        self.host = host
         self.save_progress("Database connection established")
         return phantom.APP_SUCCESS
 
     def initialize(self):
+
+        # establish connection
+        if phantom.is_fail(self._connect_sql()):
+            return self.get_status()
         return phantom.APP_SUCCESS
 
     def finalize(self):
-        # Save the state, this data is saved accross actions and app upgrades
-        self.save_state(self._state)
         return phantom.APP_SUCCESS
 
 

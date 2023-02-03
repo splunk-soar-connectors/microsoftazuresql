@@ -12,3 +12,29 @@ the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS
 either express or implied. See the License for the specific language governing permissions
 and limitations under the License.
 -->
+<h2>Proxy Details</h2>
+This app will ignore the HTTP_PROXY and HTTPS_PROXY environment variables, as it does not use HTTP to connect to the database.
+Below are the default ports used by Microsoft-Azure-Sql.
+<h2>Port Details</h2>
+  <p>
+    Below are the default ports used by this app.
+    <table>
+        <tr>
+            <th>Service Name</th>
+            <th>Transport Protocol</th>
+            <th>Port</th>
+        </tr>
+        <tr>
+            <td>Microsoft-SQL-Server (ms-sql-s)</td>
+            <td>tcp</td>
+            <td>1433</td>
+        </tr>
+        <tr>
+            <td>Microsoft-SQL-Server (ms-sql-s)</td>
+            <td>udp</td>
+            <td>1433</td>
+        </tr>
+    </table>
+  </p>
+<h2>LGPL</h2>
+    <p>This app uses the pymssql module, which is licensed under the Free Software Foundation (FSF).</p>
