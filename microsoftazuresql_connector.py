@@ -198,7 +198,7 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         if table_schema:
             if phantom.is_fail(self._check_for_valid_schema(action_result, table_schema)):
                 return phantom.APP_ERROR
-            query += "AND TABLE_SCHEMA = %s"
+            query += " AND TABLE_SCHEMA = %s"
             format_vars = ('BASE TABLE', dbname, table_schema)
         else:
             format_vars = ('BASE TABLE', dbname)
