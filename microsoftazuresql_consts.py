@@ -1,6 +1,6 @@
 # File: microsoftazuresql_consts.py
 #
-# Copyright (c) 2019-2022 Splunk Inc.
+# Copyright (c) 2019-2023 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,5 +16,6 @@
 #
 DEFAULT_TIMEOUT = 30
 
-CONNECTION_STRING = "Driver={driver};Server={host},1433;Database={database};Uid={uid};Pwd={pwd};Encrypt=no;" \
-                    "TrustServerCertificate={trust_server};Trusted_Connection=no;Connection Timeout=30;"
+MSAZURESQL_PORT = 1433
+MSAZURESQL_ERROR_MESSAGE_UNAVAILABLE = "Error message unavailable. Please check the asset configuration and|or action parameters"
+MSAZURESQL_SUCCESS_MESSAGE = "Successfully executed SQL statement"
