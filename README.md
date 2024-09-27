@@ -6,7 +6,7 @@ Connector Version: 3.0.0
 Product Vendor: Microsoft  
 Product Name: Azure SQL  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 5.4.0  
+Minimum Product Version: 6.2.1  
 
 This app supports investigative actions against a Microsoft Azure SQL Server
 
