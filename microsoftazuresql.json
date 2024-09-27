@@ -482,18 +482,13 @@
         }
     ],
     "pip_dependencies": {
-        "wheel": [
-            {
-                "module": "pymssql",
-                "input_file": "wheels/py36/pymssql-2.2.5-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
-            }
-        ]
+        "wheel": []
     },
     "pip39_dependencies": {
         "wheel": [
             {
                 "module": "pymssql",
-                "input_file": "wheels/py39/pymssql-2.2.5-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl"
+                "input_file": "wheels/py39/pymssql-2.3.1-cp39-cp39-manylinux_2_28_x86_64.whl"
             }
         ]
     }
