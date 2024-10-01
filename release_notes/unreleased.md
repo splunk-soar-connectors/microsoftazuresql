@@ -1,2 +1,2 @@
 **Unreleased**
-* PAPP-34754 update dependencies in requirements
+* update dependencies in requirements PAPP-34754 
