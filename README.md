@@ -2,11 +2,11 @@
 # Microsoft Azure SQL
 
 Publisher: Splunk  
-Connector Version: 3\.0\.0  
+Connector Version: 3.0.0  
 Product Vendor: Microsoft  
 Product Name: Azure SQL  
-Product Version Supported (regex): "\.\*"  
-Minimum Product Version: 5\.4\.0  
+Product Version Supported (regex): ".\*"  
+Minimum Product Version: 6.2.1  
 
 This app supports investigative actions against a Microsoft Azure SQL Server
 
@@ -50,7 +50,7 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
 **username** |  required  | string | Username
 **password** |  required  | password | Password
-**host** |  required  | string | Server \(example\: example\.database\.windows\.net\)
+**host** |  required  | string | Server (example: example.database.windows.net)
 **database** |  required  | string | Database
 
 ### Supported Actions  
@@ -80,21 +80,21 @@ Read only: **True**
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**table\_schema** |  optional  | Returns the tables only belonging to this schema | string |  `azuresql table schema` 
+**table_schema** |  optional  | Returns the tables only belonging to this schema | string |  `azuresql table schema` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action\_result\.status | string |  |   success  failed 
-action\_result\.parameter\.table\_schema | string |  `azuresql table schema`  |   dbo 
-action\_result\.data\.\*\.TABLE\_CATALOG | string |  `azuresql table catalog`  |   sampledb 
-action\_result\.data\.\*\.TABLE\_NAME | string |  `azuresql table name`  |   Customer  BuildVersion 
-action\_result\.data\.\*\.TABLE\_SCHEMA | string |  `azuresql table schema`  |   SalesLT 
-action\_result\.summary\.num\_tables | numeric |  |   12  2 
-action\_result\.message | string |  |   Successfully listed tables  Num tables\: 12 
-summary\.total\_objects | numeric |  |   1 
-summary\.total\_objects\_successful | numeric |  |   1 
-action\_result\.data\.\*\.TABLE\_TYPE | string |  |   TEST TABLE   
+action_result.status | string |  |   success  failed 
+action_result.parameter.table_schema | string |  `azuresql table schema`  |   dbo 
+action_result.data.\*.TABLE_CATALOG | string |  `azuresql table catalog`  |   sampledb 
+action_result.data.\*.TABLE_NAME | string |  `azuresql table name`  |   Customer  BuildVersion 
+action_result.data.\*.TABLE_SCHEMA | string |  `azuresql table schema`  |   SalesLT 
+action_result.summary.num_tables | numeric |  |   12  2 
+action_result.message | string |  |   Successfully listed tables  Num tables: 12 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1 
+action_result.data.\*.TABLE_TYPE | string |  |   TEST TABLE   
 
 ## action: 'list columns'
 Lists all the columns of a table existing within the database connected to your asset
@@ -105,32 +105,32 @@ Read only: **True**
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
-**table\_name** |  required  | Returns the columns belonging to this table | string |  `azuresql table name` 
-**table\_schema** |  optional  | Table Schema | string |  `azuresql table schema` 
+**table_name** |  required  | Returns the columns belonging to this table | string |  `azuresql table name` 
+**table_schema** |  optional  | Table Schema | string |  `azuresql table schema` 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action\_result\.status | string |  |   success  failed 
-action\_result\.parameter\.table\_name | string |  `azuresql table name`  |   vProductModelCatalogDescription 
-action\_result\.parameter\.table\_schema | string |  `azuresql table schema`  |   SalesLT 
-action\_result\.data\.\*\.COLUMN\_NAME | string |  |   ProductModelID 
-action\_result\.data\.\*\.TABLE\_NAME | string |  `azuresql table name`  |   vProductModelCatalogDescription 
-action\_result\.summary\.num\_columns | numeric |  |   25 
-action\_result\.message | string |  |   Num columns\: 25 
-summary\.total\_objects | numeric |  |   1 
-summary\.total\_objects\_successful | numeric |  |   1 
-action\_result\.data\.\*\.DATA\_TYPE | string |  |   int 
-action\_result\.data\.\*\.DOMAIN\_NAME | string |  `domain`  |  
-action\_result\.data\.\*\.IS\_NULLABLE | string |  |   YES 
-action\_result\.data\.\*\.TABLE\_SCHEMA | string |  |   sampledbo 
-action\_result\.data\.\*\.DOMAIN\_SCHEMA | string |  `sampledomain`  |  
-action\_result\.data\.\*\.NUMERIC\_SCALE | numeric |  |   0 
-action\_result\.data\.\*\.TABLE\_CATALOG | string |  |   sampledb 
-action\_result\.data\.\*\.DOMAIN\_CATALOG | string |  `domain`  |  
-action\_result\.data\.\*\.ORDINAL\_POSITION | numeric |  |   1 
-action\_result\.data\.\*\.NUMERIC\_PRECISION | numeric |  |   10 
-action\_result\.data\.\*\.NUMERIC\_PRECISION\_RADIX | numeric |  |   10   
+action_result.status | string |  |   success  failed 
+action_result.parameter.table_name | string |  `azuresql table name`  |   vProductModelCatalogDescription 
+action_result.parameter.table_schema | string |  `azuresql table schema`  |   SalesLT 
+action_result.data.\*.COLUMN_NAME | string |  |   ProductModelID 
+action_result.data.\*.TABLE_NAME | string |  `azuresql table name`  |   vProductModelCatalogDescription 
+action_result.summary.num_columns | numeric |  |   25 
+action_result.message | string |  |   Num columns: 25 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1 
+action_result.data.\*.DATA_TYPE | string |  |   int 
+action_result.data.\*.DOMAIN_NAME | string |  `domain`  |  
+action_result.data.\*.IS_NULLABLE | string |  |   YES 
+action_result.data.\*.TABLE_SCHEMA | string |  |   sampledbo 
+action_result.data.\*.DOMAIN_SCHEMA | string |  `sampledomain`  |  
+action_result.data.\*.NUMERIC_SCALE | numeric |  |   0 
+action_result.data.\*.TABLE_CATALOG | string |  |   sampledb 
+action_result.data.\*.DOMAIN_CATALOG | string |  `domain`  |  
+action_result.data.\*.ORDINAL_POSITION | numeric |  |   1 
+action_result.data.\*.NUMERIC_PRECISION | numeric |  |   10 
+action_result.data.\*.NUMERIC_PRECISION_RADIX | numeric |  |   10   
 
 ## action: 'run query'
 Run a query against a table or tables in the database
@@ -138,26 +138,26 @@ Run a query against a table or tables in the database
 Type: **generic**  
 Read only: **False**
 
-It is recommended to use the <b>format\_vars</b> parameter when applicable\. For example, if you wanted to find a specific IP, you could set <b>query</b> to a formatted string, like \\"select \* from my\_hosts where ip = %s\\" \(note the use of %s\), and set <b>format\_vars</b> to the IP address\. This will ensure the inputs are safely sanitized and to avoid SQL injection attacks\. Regardless of the type of input it's expecting, the only format specifier which should be used is %s\.<br>Setting <b>no\_commit</b> will make it so the App does not commit any changes made to the database \(so you can ensure it's a read\-only query\)\.<br><br>The <b>format\_vars</b> parameter accepts a comma\-separated list\. You can escape commas by surrounding them in double quotes, and escape double quotes with a backslash\. Assuming you have a list of values for the format vars, you can employ this code in your playbooks to properly format it into a string\:<br> <code>format\_vars\_str = ','\.join\(\['\\"\{\}\\"'\.format\(str\(x\)\.replace\('\\\\\\\\', '\\\\\\\\\\\\\\\\'\)\.replace\('\\"', '\\\\\\\\\\"'\)\) for x in format\_vars\_list\]\)</code>\.
+It is recommended to use the <b>format_vars</b> parameter when applicable. For example, if you wanted to find a specific IP, you could set <b>query</b> to a formatted string, like \\"select \* from my_hosts where ip = %s\\" (note the use of %s), and set <b>format_vars</b> to the IP address. This will ensure the inputs are safely sanitized and to avoid SQL injection attacks. Regardless of the type of input it's expecting, the only format specifier which should be used is %s.<br>Setting <b>no_commit</b> will make it so the App does not commit any changes made to the database (so you can ensure it's a read-only query).<br><br>The <b>format_vars</b> parameter accepts a comma-separated list. You can escape commas by surrounding them in double quotes, and escape double quotes with a backslash. Assuming you have a list of values for the format vars, you can employ this code in your playbooks to properly format it into a string:<br> <code>format_vars_str = ','.join(['\\"{}\\"'.format(str(x).replace('\\\\\\\\', '\\\\\\\\\\\\\\\\').replace('\\"', '\\\\\\\\\\"')) for x in format_vars_list])</code>.
 
 #### Action Parameters
 PARAMETER | REQUIRED | DESCRIPTION | TYPE | CONTAINS
 --------- | -------- | ----------- | ---- | --------
 **query** |  required  | Query string | string |  `sql query` 
-**format\_vars** |  optional  | Comma separated list of variables | string | 
-**no\_commit** |  optional  | Do not commit changes to the Database | boolean | 
+**format_vars** |  optional  | Comma separated list of variables | string | 
+**no_commit** |  optional  | Do not commit changes to the Database | boolean | 
 
 #### Action Output
 DATA PATH | TYPE | CONTAINS | EXAMPLE VALUES
 --------- | ---- | -------- | --------------
-action\_result\.status | string |  |   success  failed 
-action\_result\.parameter\.format\_vars | string |  |   a 
-action\_result\.parameter\.no\_commit | boolean |  |   True  False 
-action\_result\.parameter\.query | string |  `sql query`  |   SELECT TOP 20 pc\.Name as CategoryName, p\.name as ProductName FROM \[SalesLT\]\.\[ProductCategory\] pc JOIN \[SalesLT\]\.\[Product\] p ON pc\.productcategoryid = p\.productcategoryid 
-action\_result\.data\.\*\.CategoryName | string |  |   Test Frames 
-action\_result\.data\.\*\.ProductName | string |  |   Test Frame \- Black, 58 
-action\_result\.summary\.num\_rows | numeric |  |   20 
-action\_result\.message | string |  |   Num rows\: 20 
-summary\.total\_objects | numeric |  |   1 
-summary\.total\_objects\_successful | numeric |  |   1 
-action\_result\.data\.\*\.Status | string |  |  
+action_result.status | string |  |   success  failed 
+action_result.parameter.format_vars | string |  |   a 
+action_result.parameter.no_commit | boolean |  |   True  False 
+action_result.parameter.query | string |  `sql query`  |   SELECT TOP 20 pc.Name as CategoryName, p.name as ProductName FROM [SalesLT].[ProductCategory] pc JOIN [SalesLT].[Product] p ON pc.productcategoryid = p.productcategoryid 
+action_result.data.\*.CategoryName | string |  |   Test Frames 
+action_result.data.\*.ProductName | string |  |   Test Frame - Black, 58 
+action_result.summary.num_rows | numeric |  |   20 
+action_result.message | string |  |   Num rows: 20 
+summary.total_objects | numeric |  |   1 
+summary.total_objects_successful | numeric |  |   1 
+action_result.data.\*.Status | string |  |  
