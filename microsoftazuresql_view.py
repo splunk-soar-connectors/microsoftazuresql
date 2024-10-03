@@ -1,6 +1,6 @@
 # File: microsoftazuresql_view.py
 #
-# Copyright (c) 2019-2023 Splunk Inc.
+# Copyright (c) 2019-2024 Splunk Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 # and limitations under the License.
 def display_query_results(provides, all_results, context):
 
-    context['results'] = results = []
+    context["results"] = results = []
 
     adjusted_names = {}
 
@@ -22,18 +22,18 @@ def display_query_results(provides, all_results, context):
         for result in action_results:
             headers_set = set()
             table = dict()
-            table['data'] = rows = []
+            table["data"] = rows = []
             data = result.get_data()
             if data:
                 headers_set.update(data[0].keys())
             headers = sorted(headers_set)
-            table['headers'] = headers
+            table["headers"] = headers
             for item in data:
                 row = []
                 for h in headers:
-                    row.append({ 'value': item.get(adjusted_names.get(h, h)) })
+                    row.append({"value": item.get(adjusted_names.get(h, h))})
                 rows.append(row)
 
             results.append(table)
 
-    return 'microsoftazuresql_run_query.html'
+    return "microsoftazuresql_run_query.html"
