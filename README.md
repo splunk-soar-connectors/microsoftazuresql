@@ -6,7 +6,7 @@ Connector Version: 3.0.1
 Product Vendor: Microsoft  
 Product Name: Azure SQL  
 Product Version Supported (regex): ".\*"  
-Minimum Product Version: 6.2.1  
+Minimum Product Version: 6.3.0  
 
 This app supports investigative actions against a Microsoft Azure SQL Server
 
@@ -43,8 +43,8 @@ Below are the default ports used by this app.
 This app uses the pymssql module, which is licensed under the Free Software Foundation (FSF).
 
 
-### Configuration Variables
-The below configuration variables are required for this Connector to operate.  These variables are specified when configuring a Azure SQL asset in SOAR.
+### Configuration variables
+This table lists the configuration variables required to operate Microsoft Azure SQL. These variables are specified when configuring a Azure SQL asset in Splunk SOAR.
 
 VARIABLE | REQUIRED | TYPE | DESCRIPTION
 -------- | -------- | ---- | -----------
