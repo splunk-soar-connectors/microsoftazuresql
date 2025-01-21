@@ -2,7 +2,7 @@
 # Microsoft Azure SQL
 
 Publisher: Splunk  
-Connector Version: 3.0.1  
+Connector Version: 3.0.2  
 Product Vendor: Microsoft  
 Product Name: Azure SQL  
 Product Version Supported (regex): ".\*"  
