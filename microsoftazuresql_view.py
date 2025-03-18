@@ -13,7 +13,6 @@
 # either express or implied. See the License for the specific language governing permissions
 # and limitations under the License.
 def display_query_results(provides, all_results, context):
-
     context["results"] = results = []
 
     adjusted_names = {}
