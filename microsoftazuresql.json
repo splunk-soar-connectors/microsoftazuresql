@@ -481,14 +481,19 @@
             "versions": "EQ(*)"
         }
     ],
-    "pip_dependencies": {
-        "wheel": []
-    },
     "pip39_dependencies": {
         "wheel": [
             {
                 "module": "pymssql",
                 "input_file": "wheels/py39/pymssql-2.3.2-cp39-cp39-manylinux_2_28_x86_64.whl"
+            }
+        ]
+    },
+    "pip313_dependencies": {
+        "wheel": [
+            {
+                "module": "pymssql",
+                "input_file": "wheels/py313/pymssql-2.3.2-cp313-cp313-manylinux_2_28_x86_64.whl"
             }
         ]
     }
