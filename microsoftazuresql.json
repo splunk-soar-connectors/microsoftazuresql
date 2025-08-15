@@ -16,7 +16,7 @@
     "main_module": "microsoftazuresql_connector.py",
     "min_phantom_version": "6.3.0",
     "app_wizard_version": "1.0.0",
-    "python_version": "3",
+    "python_version": "3.9, 3.13",
     "fips_compliant": true,
     "latest_tested_versions": [
         "Azure SQL Server v12.0.2000.8"
@@ -485,7 +485,7 @@
         "wheel": [
             {
                 "module": "pymssql",
-                "input_file": "wheels/py39/pymssql-2.3.2-cp39-cp39-manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py39/pymssql-2.3.7-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
             }
         ]
     },
@@ -493,7 +493,7 @@
         "wheel": [
             {
                 "module": "pymssql",
-                "input_file": "wheels/py313/pymssql-2.3.2-cp313-cp313-manylinux_2_28_x86_64.whl"
+                "input_file": "wheels/py313/pymssql-2.3.7-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
             }
         ]
     }
