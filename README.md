@@ -1,7 +1,7 @@
 # Microsoft Azure SQL
 
 Publisher: Splunk \
-Connector Version: 3.0.3 \
+Connector Version: 3.0.4 \
 Product Vendor: Microsoft \
 Product Name: Azure SQL \
 Minimum Product Version: 6.3.0
