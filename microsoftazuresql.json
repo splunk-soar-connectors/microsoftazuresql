@@ -9,7 +9,7 @@
     "product_name": "Azure SQL",
     "product_version_regex": ".*",
     "publisher": "Splunk",
-    "license": "Copyright (c) 2019-2025 Splunk Inc.",
+    "license": "Copyright (c) 2019-2026 Splunk Inc.",
     "app_version": "3.0.4",
     "utctime_updated": "2025-09-08T19:44:14.525274Z",
     "package_name": "phantom_microsoftazuresql",
@@ -485,7 +485,7 @@
         "wheel": [
             {
                 "module": "pymssql",
-                "input_file": "wheels/py39/pymssql-2.3.7-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+                "input_file": "wheels/py39/pymssql-2.3.11-cp39-cp39-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
             }
         ]
     },
@@ -493,7 +493,7 @@
         "wheel": [
             {
                 "module": "pymssql",
-                "input_file": "wheels/py313/pymssql-2.3.7-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.whl"
+                "input_file": "wheels/py313/pymssql-2.3.11-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl"
             }
         ]
     }
