@@ -18,8 +18,10 @@ import binascii
 import csv
 import datetime
 import json
+import os
 import struct
 import sys
+import tempfile
 
 import phantom.app as phantom
 import pymssql
@@ -43,6 +45,9 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         self.host = None
         self.database = None
         self._cursor = None
+        self._freetds_conf_path = None
+        self._ca_certificate_path = None
+        self._previous_freetds_conf = os.environ.get("FREETDSCONF")
 
     def _initialize_error(self, msg, exception=None):
         if self.get_action_identifier() == "test_connectivity":
@@ -311,14 +316,48 @@ class MicrosoftAzureSqlConnector(BaseConnector):
 
         return ret_val
 
+    def _configure_freetds(self, verify_server_cert, ca_certificate=None):
+        lines = ["[global]", "encryption = require"]
+
+        if verify_server_cert:
+            ca_file = "system"
+            if ca_certificate:
+                ca_file_obj = tempfile.NamedTemporaryFile(mode="w", prefix="azure_sql_ca_", suffix=".pem", delete=False)
+                self._ca_certificate_path = ca_file_obj.name
+                try:
+                    ca_file_obj.write(ca_certificate)
+                    ca_file_obj.flush()
+                finally:
+                    ca_file_obj.close()
+                ca_file = self._ca_certificate_path
+
+            lines.extend([f"ca file = {ca_file}", "check certificate hostname = yes"])
+        else:
+            self.save_progress("Warning: TLS server certificate validation is disabled for this asset")
+
+        conf_file = tempfile.NamedTemporaryFile(mode="w", prefix="azure_sql_freetds_", suffix=".conf", delete=False)
+        self._freetds_conf_path = conf_file.name
+        try:
+            conf_file.write("\n".join(lines) + "\n")
+            conf_file.flush()
+        finally:
+            conf_file.close()
+
+        os.environ["FREETDSCONF"] = self._freetds_conf_path
+
     def _connect_sql(self):
         config = self.get_config()
         username = config["username"]
         password = config["password"]
         host = config["host"]
         database = config["database"]
+        verify_server_cert = config.get("verify_server_cert", True)
+        ca_certificate = config.get("ca_certificate")
         try:
-            self._connection = pymssql.connect(server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT)
+            self._configure_freetds(verify_server_cert, ca_certificate)
+            self._connection = pymssql.connect(  # pylint: disable=no-member
+                server=host, user=username, password=password, database=database, port=MSAZURESQL_PORT
+            )
             self._cursor = self._connection.cursor()
         except Exception as e:
             return self._initialize_error("Error occurred while authenticating with database", e)
@@ -339,6 +378,17 @@ class MicrosoftAzureSqlConnector(BaseConnector):
         return phantom.APP_SUCCESS
 
     def finalize(self):
+        for temp_path in (self._freetds_conf_path, self._ca_certificate_path):
+            if temp_path:
+                try:
+                    os.unlink(temp_path)
+                except OSError:
+                    self.debug_print(f"Error deleting temporary TLS configuration file: {temp_path}")
+
+        if self._previous_freetds_conf is None:
+            os.environ.pop("FREETDSCONF", None)
+        else:
+            os.environ["FREETDSCONF"] = self._previous_freetds_conf
         return phantom.APP_SUCCESS
 
 

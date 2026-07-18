@@ -45,6 +45,17 @@
             "data_type": "string",
             "order": 3,
             "required": true
+        },
+        "verify_server_cert": {
+            "description": "Validate the database server TLS certificate",
+            "data_type": "boolean",
+            "default": true,
+            "order": 4
+        },
+        "ca_certificate": {
+            "description": "Optional PEM-encoded CA certificate used to validate the database server",
+            "data_type": "string",
+            "order": 5
         }
     },
     "actions": [
