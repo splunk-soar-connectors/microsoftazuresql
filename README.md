@@ -36,6 +36,8 @@ VARIABLE | REQUIRED | TYPE | DESCRIPTION
 **password** | required | password | Password |
 **host** | required | string | Server (example: example.database.windows.net) |
 **database** | required | string | Database |
+**verify_server_cert** | optional | boolean | Validate the database server TLS certificate |
+**ca_certificate** | optional | string | Optional PEM-encoded CA certificate used to validate the database server |
 
 ### Supported Actions
 
