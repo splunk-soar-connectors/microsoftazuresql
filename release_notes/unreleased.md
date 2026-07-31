@@ -1,1 +1,3 @@
 **Unreleased**
+
+* Required encrypted database connections and enabled TLS certificate and hostname validation by default.
